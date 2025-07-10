@@ -47,7 +47,8 @@ func main(){
 	}
 
 	// enable http2
-
+	// this configures the http server that we created to have https functionality
+	// its configuring the server
 	http2.ConfigureServer(server, &http2.Server{})
 
 
