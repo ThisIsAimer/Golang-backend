@@ -1,8 +1,11 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
+
+	"golang.org/x/net/http2"
 )
 
 func homeResp(w http.ResponseWriter, r *http.Request){
@@ -26,8 +29,45 @@ func main(){
 
 	port := 3000
 
+	// for http2
+
+	cert := `certification\certificate.pem`
+	key := `certification\key.pem`
+
+	//configure tls
+	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+	}
+
+	//create a custom server
+	server := &http.Server{
+		Addr: fmt.Sprintf(":%d",port),
+		Handler: nil,
+		TLSConfig: tlsConfig,
+	}
+
+	// enable http2
+
+	http2.ConfigureServer(server, &http2.Server{})
+
+
+
 	fmt.Println("server is running on port: ", port)
 
-	http.ListenAndServe(fmt.Sprintf(":%d",port),nil)
+
+	err := server.ListenAndServeTLS(cert,key)
+	if err != nil {
+		fmt.Println("error is:", err)
+		return
+	}
+
+
+	// http 1.1
+
+	// err := http.ListenAndServe(fmt.Sprintf(":%d",port),nil)
+	// if err != nil {
+	// 	fmt.Println("error is:", err)
+	// 	return
+	// }
 
 }
