@@ -5,6 +5,8 @@
 - go get |package link|
 - go mod tidy (removes all the unnecessary packages not in use in the go mod file)
 - go list -m all
+- go clean -modcache
+- go mod verify
 
 #### module is a collection of related packages
 
