@@ -15,3 +15,9 @@
 #### then put bin folder in env variables
 
 - openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out certificate.pem -days 365
+
+
+## Api testing
+
+- postman
+- curl (curl -v -k https://localhost:3000/)
