@@ -12,9 +12,14 @@
 
 ## https cert cmd
 #### download from https://slproweb.com/products/Win32OpenSSL.html
-#### then put bin folder in env variables
+### then put bin folder in env variables
 
+#### without config file
 - openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out certificate.pem -days 365
+#### with config file
+- openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out certificate.pem -days 365 -config openssl.cnf
+
+#### for testing add  the self signed certificate to postman as authorised certs
 
 
 ## Api testing

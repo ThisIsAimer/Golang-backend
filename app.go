@@ -2,9 +2,11 @@ package main
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"golang.org/x/net/http2"
 )
@@ -27,6 +29,23 @@ func usersResp(w http.ResponseWriter, r *http.Request){
 	fmt.Fprintf(w,"handling our users")
 }
 
+
+// for reading client Ca
+// Now client must also have the pem certificate to access the page!
+func loadClientCas() *x509.CertPool{
+	clientCas := x509.NewCertPool()
+	file, err := os.ReadFile(`certification\certificate.pem`)
+	if err != nil {
+		log.Fatalln("couldnt load client cert:", err)
+	}
+
+	clientCas.AppendCertsFromPEM(file)
+
+	return clientCas
+
+}
+
+
 func main(){
 
 	http.HandleFunc("/", homeResp)
@@ -44,6 +63,9 @@ func main(){
 	//configure tls
 	tlsConfig := &tls.Config{
 		MinVersion: tls.VersionTLS12,
+		// client certification
+		ClientAuth: tls.RequireAndVerifyClientCert,
+		ClientCAs: loadClientCas(),
 	}
 
 	//create a custom server
