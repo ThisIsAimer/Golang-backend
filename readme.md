@@ -26,3 +26,10 @@
 
 - postman
 - curl (curl -v -k https://localhost:3000/)
+
+
+## benchmarking
+### use of wsl
+
+- wrk -t8 -c400 -d30s "link"
+- h2load -n  1000 -c 100 -t 8 (--h1 for http1)
