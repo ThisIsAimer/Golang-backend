@@ -5,41 +5,96 @@ import (
 	"net/http"
 )
 
-// http methods are get post put patch delete
+// http methods are get, post, put, patch, delete
 
 func homeRoute(w http.ResponseWriter, r *http.Request){
-	if r.Method == http.MethodGet{
-		w.Header().Set("Content-Type", "string")
-		fmt.Fprintln(w,"someone accessed: home, with get method!")
-		return
-	}
 
 	w.Header().Set("Content-Type", "string")
-	w.Write([]byte("This is home"))
 	fmt.Println("someone accessed: home")
 	fmt.Println("method:", r.Method)
+
+	switch r.Method{
+	case http.MethodGet:
+		fmt.Fprintln(w, "accessed : Home. with: Get")
+	case http.MethodPost:
+		fmt.Fprintln(w, "accessed : Home. with: Post")
+	case http.MethodPut:
+		fmt.Fprintln(w, "accessed : Home. with: Put")
+	case http.MethodPatch:
+		fmt.Fprintln(w, "accessed : Home. with: Patch")
+	case http.MethodDelete:
+		fmt.Fprintln(w, "accessed : Home. with: Delete")
+	default:
+		fmt.Fprintln(w, "accessed : Home")
+
+	}
 
 }
 
 func teachersRoute(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "string")
-	fmt.Fprintf(w,"This is teachers route")
 	fmt.Println("someone accessed: Teachers route")
 	fmt.Println("method:", r.Method)
+
+	switch r.Method{
+	case http.MethodGet:
+		fmt.Fprintln(w, "accessed : Teachers. with: Get")
+	case http.MethodPost:
+		fmt.Fprintln(w, "accessed : Teachers. with: Post")
+	case http.MethodPut:
+		fmt.Fprintln(w, "accessed : Teachers. with: Put")
+	case http.MethodPatch:
+		fmt.Fprintln(w, "accessed : Teachers. with: Patch")
+	case http.MethodDelete:
+		fmt.Fprintln(w, "accessed : Teachers. with: Delete")
+	default:
+		fmt.Fprintln(w, "accessed : Teachers")
+
+	}
 }
 
 func studentsRoute(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "string")
-	fmt.Fprintf(w,"This is students route")
 	fmt.Println("someone accessed: Students route")
 	fmt.Println("method:", r.Method)
+
+	switch r.Method{
+	case http.MethodGet:
+		fmt.Fprintln(w, "accessed : Students. with: Get")
+	case http.MethodPost:
+		fmt.Fprintln(w, "accessed : Students. with: Post")
+	case http.MethodPut:
+		fmt.Fprintln(w, "accessed : Students. with: Put")
+	case http.MethodPatch:
+		fmt.Fprintln(w, "accessed : Students. with: Patch")
+	case http.MethodDelete:
+		fmt.Fprintln(w, "accessed : Students. with: Delete")
+	default:
+		fmt.Fprintln(w, "accessed : Students")
+
+	}
 }
 
 func execsRoute(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "string")
-	w.Write([]byte("This is executives route"))
 	fmt.Println("someone accessed: Execs route")
 	fmt.Println("method:", r.Method)
+
+	switch r.Method{
+	case http.MethodGet:
+		fmt.Fprintln(w, "accessed : Executives. with: Get")
+	case http.MethodPost:
+		fmt.Fprintln(w, "accessed : Executives. with: Post")
+	case http.MethodPut:
+		fmt.Fprintln(w, "accessed : Executives. with: Put")
+	case http.MethodPatch:
+		fmt.Fprintln(w, "accessed : Executives. with: Patch")
+	case http.MethodDelete:
+		fmt.Fprintln(w, "accessed : Executives. with: Delete")
+	default:
+		fmt.Fprintln(w, "accessed : Executives")
+
+	}
 }
 
 func main(){
