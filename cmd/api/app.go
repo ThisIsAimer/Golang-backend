@@ -18,6 +18,32 @@ func homeRoute(w http.ResponseWriter, r *http.Request){
 		fmt.Fprintln(w, "accessed : Home. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Home. with: Post")
+
+		// parsing form in post request (necessary for x-www-form-urlencoded)
+
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "erroring parsing form", http.StatusBadRequest)
+			return
+		}
+
+		//extracting the values
+
+		response := make(map[string]any)
+
+		for key, value := range r.Form{
+			response[key] = value
+		}
+
+		if len(response) > 0{
+			fmt.Println(response)
+			// printing it out from the string
+			
+			resp := response["name"].([]string)
+			fmt.Println(resp[0])
+		}
+
+
 	case http.MethodPut:
 		fmt.Fprintln(w, "accessed : Home. with: Put")
 	case http.MethodPatch:
