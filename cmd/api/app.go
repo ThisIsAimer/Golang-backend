@@ -1,10 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
+	"strings"
 )
 
 type user struct{
@@ -24,67 +23,16 @@ func homeRoute(w http.ResponseWriter, r *http.Request){
 
 	switch r.Method{
 	case http.MethodGet:
+		// for a specific ID, it will be routed to /teachers/90 or smth
+		urlPath := strings.TrimPrefix(r.URL.Path, "/")
+		userId := strings.TrimSuffix(urlPath,"/")
+
+		if userId != ""{
+			fmt.Println("id is:",userId)
+		}
 		fmt.Fprintln(w, "accessed : Home. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Home. with: Post")
-
-		// parsing form in post request (necessary for x-www-form-urlencoded)
-
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, "erroring parsing form", http.StatusBadRequest)
-			return
-		}
-
-		//extracting the values
-
-		response := make(map[string]any)
-
-		for key, value := range r.Form{
-			response[key] = value[0]
-		}
-
-		if len(response) > 0{
-			fmt.Println(response)
-		}
-
-		//----------------------------------------------------------------------------------
-		// raw response
-
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w,"error reading body", http.StatusBadRequest)
-			return
-		}
-		defer r.Body.Close()
-
-		println("raw body", string(body))
-
-		var myUser user
-
-		err = json.Unmarshal(body, &myUser)
-		if err != nil {
-			fmt.Println("error unmarshalling json data", err)
-			return
-		}
-
-		fmt.Println("myUser:", myUser)
-		fmt.Println("recieved userName:", myUser.Name)
-		//------------------------------------------------------------
-		// using maps
-
-		resp1 := make(map[string]any)
-
-		err = json.Unmarshal(body, &resp1)
-		if err != nil {
-			fmt.Println("error unmarshalling json data", err)
-			return
-		}
-
-		fmt.Println("map response:", resp1)
-
-
-
 	case http.MethodPut:
 		fmt.Fprintln(w, "accessed : Home. with: Put")
 	case http.MethodPatch:
@@ -105,6 +53,14 @@ func teachersRoute(w http.ResponseWriter, r *http.Request){
 
 	switch r.Method{
 	case http.MethodGet:
+		// for a specific ID, it will be routed to /teachers/90 or smth
+		urlPath := strings.TrimPrefix(r.URL.Path, "/teachers/")
+		userId := strings.TrimSuffix(urlPath,"/")
+
+		if userId != ""{
+			fmt.Println("id is:",userId)
+		}
+
 		fmt.Fprintln(w, "accessed : Teachers. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Teachers. with: Post")
@@ -127,6 +83,14 @@ func studentsRoute(w http.ResponseWriter, r *http.Request){
 
 	switch r.Method{
 	case http.MethodGet:
+		// for a specific ID, it will be routed to /teachers/90 or smth
+		urlPath := strings.TrimPrefix(r.URL.Path, "/students/")
+		userId := strings.TrimSuffix(urlPath,"/")
+
+		if userId != ""{
+			fmt.Println("id is:",userId)
+		}
+
 		fmt.Fprintln(w, "accessed : Students. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Students. with: Post")
@@ -149,6 +113,14 @@ func execsRoute(w http.ResponseWriter, r *http.Request){
 
 	switch r.Method{
 	case http.MethodGet:
+		// for a specific ID, it will be routed to /teachers/90 or smth
+		urlPath := strings.TrimPrefix(r.URL.Path, "/execs/")
+		userId := strings.TrimSuffix(urlPath,"/")
+
+		if userId != ""{
+			fmt.Println("id is:",userId)
+		}
+
 		fmt.Fprintln(w, "accessed : Executives. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Executives. with: Post")
@@ -167,9 +139,9 @@ func execsRoute(w http.ResponseWriter, r *http.Request){
 func main(){
 
 	http.HandleFunc("/", homeRoute)
-	http.HandleFunc("/teachers", teachersRoute)
-	http.HandleFunc("/students", studentsRoute)
-	http.HandleFunc("/execs", execsRoute)
+	http.HandleFunc("/teachers/", teachersRoute)
+	http.HandleFunc("/students/", studentsRoute)
+	http.HandleFunc("/execs/", execsRoute)
 
 
 	port := 3000
