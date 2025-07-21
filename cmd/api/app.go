@@ -1,9 +1,18 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
+
+type user struct{
+	Name string `json:"name"`
+	Age int `json:"age"`
+	Place string `json:"place"`
+}
+
 
 // http methods are get, post, put, patch, delete
 
@@ -38,6 +47,29 @@ func homeRoute(w http.ResponseWriter, r *http.Request){
 		if len(response) > 0{
 			fmt.Println(response)
 		}
+
+		//----------------------------------------------------------------------------------
+		// raw response
+
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w,"error reading body", http.StatusBadRequest)
+			return
+		}
+		defer r.Body.Close()
+
+		println("raw body", string(body))
+
+		var myUser user
+
+		err = json.Unmarshal(body, &myUser)
+		if err != nil {
+			fmt.Println("error unmarshalling json data", err)
+			return
+		}
+
+		fmt.Println("myUser:", myUser)
+		fmt.Println("recieved userName:", myUser.Name)
 
 
 	case http.MethodPut:
