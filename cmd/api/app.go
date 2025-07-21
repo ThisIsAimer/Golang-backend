@@ -32,15 +32,11 @@ func homeRoute(w http.ResponseWriter, r *http.Request){
 		response := make(map[string]any)
 
 		for key, value := range r.Form{
-			response[key] = value
+			response[key] = value[0]
 		}
 
 		if len(response) > 0{
 			fmt.Println(response)
-			// printing it out from the string
-			
-			resp := response["name"].([]string)
-			fmt.Println(resp[0])
 		}
 
 
