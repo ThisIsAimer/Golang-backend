@@ -70,6 +70,19 @@ func homeRoute(w http.ResponseWriter, r *http.Request){
 
 		fmt.Println("myUser:", myUser)
 		fmt.Println("recieved userName:", myUser.Name)
+		//------------------------------------------------------------
+		// using maps
+
+		resp1 := make(map[string]any)
+
+		err = json.Unmarshal(body, &resp1)
+		if err != nil {
+			fmt.Println("error unmarshalling json data", err)
+			return
+		}
+
+		fmt.Println("map response:", resp1)
+
 
 
 	case http.MethodPut:
