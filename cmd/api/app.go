@@ -30,6 +30,18 @@ func homeRoute(w http.ResponseWriter, r *http.Request){
 		if userId != ""{
 			fmt.Println("id is:",userId)
 		}
+
+		//------------handling quary-----------------------------------
+		if len(r.URL.Query()) > 0{
+
+			quaryParams := r.URL.Query()
+
+			for key := range quaryParams{
+				fmt.Printf("key %v : %v \n", key, quaryParams.Get(key))
+			}
+		}
+
+
 		fmt.Fprintln(w, "accessed : Home. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Home. with: Post")
@@ -61,6 +73,17 @@ func teachersRoute(w http.ResponseWriter, r *http.Request){
 			fmt.Println("id is:",userId)
 		}
 
+		//------------handling quary-----------------------------------
+		if len(r.URL.Query()) > 0{
+
+			quaryParams := r.URL.Query()
+
+			for key := range quaryParams{
+				fmt.Printf("key %v : %v \n", key, quaryParams.Get(key))
+			}
+		}
+
+		
 		fmt.Fprintln(w, "accessed : Teachers. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Teachers. with: Post")
@@ -91,6 +114,17 @@ func studentsRoute(w http.ResponseWriter, r *http.Request){
 			fmt.Println("id is:",userId)
 		}
 
+		//------------handling quary-----------------------------------
+		if len(r.URL.Query()) > 0{
+
+			quaryParams := r.URL.Query()
+
+			for key := range quaryParams{
+				fmt.Printf("key %v : %v \n", key, quaryParams.Get(key))
+			}
+		}
+
+
 		fmt.Fprintln(w, "accessed : Students. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Students. with: Post")
@@ -120,6 +154,17 @@ func execsRoute(w http.ResponseWriter, r *http.Request){
 		if userId != ""{
 			fmt.Println("id is:",userId)
 		}
+
+		//------------handling quary-----------------------------------
+		if len(r.URL.Query()) > 0{
+
+			quaryParams := r.URL.Query()
+
+			for key := range quaryParams{
+				fmt.Printf("key %v : %v \n", key, quaryParams.Get(key))
+			}
+		}
+
 
 		fmt.Fprintln(w, "accessed : Executives. with: Get")
 	case http.MethodPost:
