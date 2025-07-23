@@ -165,10 +165,13 @@ func execsRoute(w http.ResponseWriter, r *http.Request){
 
 func main(){
 
-	http.HandleFunc("/", homeRoute)
-	http.HandleFunc("/teachers/", teachersRoute)
-	http.HandleFunc("/students/", studentsRoute)
-	http.HandleFunc("/execs/", execsRoute)
+	mux := http.NewServeMux()
+
+
+	mux.HandleFunc("/", homeRoute)
+	mux.HandleFunc("/teachers/", teachersRoute)
+	mux.HandleFunc("/students/", studentsRoute)
+	mux.HandleFunc("/execs/", execsRoute)
 
 
 	port := 3000
@@ -183,7 +186,7 @@ func main(){
 
 	server := &http.Server{
 		Addr: fmt.Sprintf(":%d",port),
-		Handler: nil,
+		Handler: mux,
 		TLSConfig: tlsConfig,
 	}
 
