@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 type user struct{
@@ -24,25 +23,6 @@ func homeRoute(w http.ResponseWriter, r *http.Request){
 
 	switch r.Method{
 	case http.MethodGet:
-		// for a specific ID, it will be routed to /teachers/90 or smth
-		urlPath := strings.TrimPrefix(r.URL.Path, "/")
-		userId := strings.TrimSuffix(urlPath,"/")
-
-		if userId != ""{
-			fmt.Println("id is:",userId)
-		}
-
-		//------------handling quary-----------------------------------
-		if len(r.URL.Query()) > 0{
-
-			quaryParams := r.URL.Query()
-
-			for key := range quaryParams{
-				fmt.Printf("key %v : %v \n", key, quaryParams.Get(key))
-			}
-		}
-
-
 		fmt.Fprintln(w, "accessed : Home. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Home. with: Post")
@@ -88,25 +68,6 @@ func studentsRoute(w http.ResponseWriter, r *http.Request){
 
 	switch r.Method{
 	case http.MethodGet:
-		// for a specific ID, it will be routed to /teachers/90 or smth
-		urlPath := strings.TrimPrefix(r.URL.Path, "/students/")
-		userId := strings.TrimSuffix(urlPath,"/")
-
-		if userId != ""{
-			fmt.Println("id is:",userId)
-		}
-
-		//------------handling quary-----------------------------------
-		if len(r.URL.Query()) > 0{
-
-			quaryParams := r.URL.Query()
-
-			for key := range quaryParams{
-				fmt.Printf("key %v : %v \n", key, quaryParams.Get(key))
-			}
-		}
-
-
 		fmt.Fprintln(w, "accessed : Students. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Students. with: Post")
@@ -129,25 +90,6 @@ func execsRoute(w http.ResponseWriter, r *http.Request){
 
 	switch r.Method{
 	case http.MethodGet:
-		// for a specific ID, it will be routed to /teachers/90 or smth
-		urlPath := strings.TrimPrefix(r.URL.Path, "/execs/")
-		userId := strings.TrimSuffix(urlPath,"/")
-
-		if userId != ""{
-			fmt.Println("id is:",userId)
-		}
-
-		//------------handling quary-----------------------------------
-		if len(r.URL.Query()) > 0{
-
-			quaryParams := r.URL.Query()
-
-			for key := range quaryParams{
-				fmt.Printf("key %v : %v \n", key, quaryParams.Get(key))
-			}
-		}
-
-
 		fmt.Fprintln(w, "accessed : Executives. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Executives. with: Post")
@@ -165,13 +107,13 @@ func execsRoute(w http.ResponseWriter, r *http.Request){
 
 func main(){
 
-	mux := http.NewServeMux()
+	// mux := http.NewServeMux()
 
 
-	mux.HandleFunc("/", homeRoute)
-	mux.HandleFunc("/teachers/", teachersRoute)
-	mux.HandleFunc("/students/", studentsRoute)
-	mux.HandleFunc("/execs/", execsRoute)
+	http.HandleFunc("/", homeRoute)
+	http.HandleFunc("/teachers", teachersRoute)
+	http.HandleFunc("/students", studentsRoute)
+	http.HandleFunc("/execs", execsRoute)
 
 
 	port := 3000
@@ -186,7 +128,7 @@ func main(){
 
 	server := &http.Server{
 		Addr: fmt.Sprintf(":%d",port),
-		Handler: mux,
+		Handler: nil,
 		TLSConfig: tlsConfig,
 	}
 
