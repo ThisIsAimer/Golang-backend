@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"strings"
@@ -65,25 +66,6 @@ func teachersRoute(w http.ResponseWriter, r *http.Request){
 
 	switch r.Method{
 	case http.MethodGet:
-		// for a specific ID, it will be routed to /teachers/90 or smth
-		urlPath := strings.TrimPrefix(r.URL.Path, "/teachers/")
-		userId := strings.TrimSuffix(urlPath,"/")
-
-		if userId != ""{
-			fmt.Println("id is:",userId)
-		}
-
-		//------------handling quary-----------------------------------
-		if len(r.URL.Query()) > 0{
-
-			quaryParams := r.URL.Query()
-
-			for key := range quaryParams{
-				fmt.Printf("key %v : %v \n", key, quaryParams.Get(key))
-			}
-		}
-
-		
 		fmt.Fprintln(w, "accessed : Teachers. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Teachers. with: Post")
@@ -191,15 +173,24 @@ func main(){
 
 	port := 3000
 
+	key := `certificate\key.pem`
+	cert := `certificate\certificate.pem`
+
+	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+	}
+
+
 	server := &http.Server{
 		Addr: fmt.Sprintf(":%d",port),
 		Handler: nil,
+		TLSConfig: tlsConfig,
 	}
 
 	fmt.Println("server is running on port:", port)
 
 
-	err := server.ListenAndServe()
+	err := server.ListenAndServeTLS(cert,key)
 	if err != nil {
 		fmt.Println("error is:", err)
 		return
