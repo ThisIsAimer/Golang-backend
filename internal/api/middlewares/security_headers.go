@@ -16,6 +16,15 @@ func SecurityHeaders(next http.Handler) http.Handler {
 
 		w.Header().Set("X-Powered-By", "Me or someone i know")//any value can be added
 
+
+		w.Header().Set("Server", "")
+		w.Header().Set("X-Permitted-Cross-Domain-Policies", "none")
+		w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+		w.Header().Set("Cross-Origin-Resource-Policy", "same-origin")
+		w.Header().Set("Cross-Origin-Opener-Policy", "same-origin")
+		w.Header().Set("Cross-Origin-Embedder-Policy", "require-corp")
+		w.Header().Set("Permissions-Policy", "geolocation=(self), microphone=()")
+
 		next.ServeHTTP(w, r)
 	})
 
