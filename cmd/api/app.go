@@ -4,24 +4,24 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"simpleapi/internal/api/middlewares"
 )
 
-type user struct{
-	Name string `json:"name"`
-	Age int `json:"age"`
+type user struct {
+	Name  string `json:"name"`
+	Age   int    `json:"age"`
 	Place string `json:"place"`
 }
 
-
 // http methods are get, post, put, patch, delete
 
-func homeRoute(w http.ResponseWriter, r *http.Request){
+func homeRoute(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "string")
 	fmt.Println("someone accessed: home")
 	fmt.Println("method:", r.Method)
 
-	switch r.Method{
+	switch r.Method {
 	case http.MethodGet:
 		fmt.Fprintln(w, "accessed : Home. with: Get")
 	case http.MethodPost:
@@ -39,12 +39,12 @@ func homeRoute(w http.ResponseWriter, r *http.Request){
 
 }
 
-func teachersRoute(w http.ResponseWriter, r *http.Request){
+func teachersRoute(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "string")
 	fmt.Println("someone accessed: Teachers route")
 	fmt.Println("method:", r.Method)
 
-	switch r.Method{
+	switch r.Method {
 	case http.MethodGet:
 		fmt.Fprintln(w, "accessed : Teachers. with: Get")
 	case http.MethodPost:
@@ -61,12 +61,12 @@ func teachersRoute(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-func studentsRoute(w http.ResponseWriter, r *http.Request){
+func studentsRoute(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "string")
 	fmt.Println("someone accessed: Students route")
 	fmt.Println("method:", r.Method)
 
-	switch r.Method{
+	switch r.Method {
 	case http.MethodGet:
 		fmt.Fprintln(w, "accessed : Students. with: Get")
 	case http.MethodPost:
@@ -83,12 +83,12 @@ func studentsRoute(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-func execsRoute(w http.ResponseWriter, r *http.Request){
+func execsRoute(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "string")
 	fmt.Println("someone accessed: Execs route")
 	fmt.Println("method:", r.Method)
 
-	switch r.Method{
+	switch r.Method {
 	case http.MethodGet:
 		fmt.Fprintln(w, "accessed : Executives. with: Get")
 	case http.MethodPost:
@@ -105,16 +105,14 @@ func execsRoute(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-func main(){
+func main() {
 
 	mux := http.NewServeMux()
-
 
 	mux.HandleFunc("/", homeRoute)
 	mux.HandleFunc("/teachers", teachersRoute)
 	mux.HandleFunc("/students", studentsRoute)
 	mux.HandleFunc("/execs", execsRoute)
-
 
 	port := 3000
 
@@ -125,17 +123,15 @@ func main(){
 		MinVersion: tls.VersionTLS12,
 	}
 
-
 	server := &http.Server{
-		Addr: fmt.Sprintf(":%d",port),
-		Handler: mux,
+		Addr:      fmt.Sprintf(":%d", port),
+		Handler:   middlewares.SecurityHeaders(mux),
 		TLSConfig: tlsConfig,
 	}
 
 	fmt.Println("server is running on port:", port)
 
-
-	err := server.ListenAndServeTLS(cert,key)
+	err := server.ListenAndServeTLS(cert, key)
 	if err != nil {
 		fmt.Println("error is:", err)
 		return

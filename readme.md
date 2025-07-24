@@ -33,3 +33,14 @@
 
 - wrk -t8 -c400 -d30s "link"
 - h2load -n  1000 -c 100 -t 8 (--h1 for http1)
+
+
+# middleware snippits
+
+func securityHeaders(next http.Handler) http.Handler{
+
+	return http.HandlerFunc( func (w http.ResponseWriter, r *http.Request)  {
+		next.ServeHTTP(w,r)
+	})
+
+}
