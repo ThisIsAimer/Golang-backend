@@ -5,6 +5,12 @@ import (
 	"net/http"
 )
 
+var allowedOrigins = []string{
+	"https://localhost:3000",
+	"https://i-am-pro.com",
+}
+
+
 // cross-origine resource sharing
 func Cors(next http.Handler) http.Handler {
 
@@ -12,7 +18,7 @@ func Cors(next http.Handler) http.Handler {
 		origin := r.Header.Get("Origin")
 		fmt.Println("Origin:", origin)
 
-		if origin == "https://localhost:3000" {
+		if originVerification(origin) {
 			fmt.Println("access allowed")
 		} else {
 			http.Error(w, "not allowed by Cors", http.StatusForbidden)
@@ -29,4 +35,13 @@ func Cors(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 
+}
+
+func originVerification(origin string) bool {
+	for _, value := range allowedOrigins{
+		if value == origin{
+			return true
+		}
+	}
+	return false
 }
