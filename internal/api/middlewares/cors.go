@@ -20,6 +20,7 @@ func Cors(next http.Handler) http.Handler {
 
 		if originVerification(origin) {
 			fmt.Println("access allowed")
+			w.Header().Set("Access-Control-Allow-Origin", origin)
 		} else {
 			http.Error(w, "not allowed by Cors", http.StatusForbidden)
 			return
@@ -31,6 +32,13 @@ func Cors(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Max-Age", "3600")
+
+
+		// method options is for a preflight check
+		//A preflight check refers to a preliminary request made by browsers when using CORS (Cross-Origin Resource Sharing) to ensure that the actual request is safe to send.
+		if r.Method == http.MethodOptions{
+			return 
+		}
 
 		next.ServeHTTP(w, r)
 	})

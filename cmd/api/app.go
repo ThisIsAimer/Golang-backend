@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	
-	"simpleapi/internal/api/middlewares"
+	mid "simpleapi/internal/api/middlewares"
 )
 
 type user struct {
@@ -126,7 +126,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", port),
-		Handler:   middlewares.Cors(middlewares.SecurityHeaders(mux)),
+		Handler:   mid.Cors(mid.SecurityHeaders(mux)),
 		TLSConfig: tlsConfig,
 	}
 
