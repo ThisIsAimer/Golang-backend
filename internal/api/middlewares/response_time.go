@@ -11,7 +11,7 @@ func ResponseTime(next http.Handler) http.Handler {
 		start := time.Now()
 
 		// create a custom response writer to capture the status code
-		wrappedWriter := &responseWriter{ResponseWriter: w, status: http.StatusOK}
+		wrappedWriter := &ResponseWriter{ResponseWriter: w, status: http.StatusOK}
 
 		next.ServeHTTP(wrappedWriter, r)
 
@@ -21,14 +21,14 @@ func ResponseTime(next http.Handler) http.Handler {
 	})
 }
 
-type responseWriter struct {
+type ResponseWriter struct {
 	// adds all the properties of http.ResponseWriter to our struct
 	http.ResponseWriter
 	status int
 }
 
 // we are overwriting WriteHeader method
-func (rw *responseWriter) WriteHeader(code int) {
+func (rw *ResponseWriter) WriteHeader(code int) {
 	rw.status = code // now we can log the status codes
 	rw.ResponseWriter.WriteHeader(code)
 }

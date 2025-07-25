@@ -20,7 +20,6 @@ func homeRoute(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "string")
 	fmt.Println("someone accessed: home")
-	fmt.Println("method:", r.Method)
 
 	switch r.Method {
 	case http.MethodGet:
@@ -43,7 +42,6 @@ func homeRoute(w http.ResponseWriter, r *http.Request) {
 func teachersRoute(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "string")
 	fmt.Println("someone accessed: Teachers route")
-	fmt.Println("method:", r.Method)
 
 	switch r.Method {
 	case http.MethodGet:
@@ -65,7 +63,6 @@ func teachersRoute(w http.ResponseWriter, r *http.Request) {
 func studentsRoute(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "string")
 	fmt.Println("someone accessed: Students route")
-	fmt.Println("method:", r.Method)
 
 	switch r.Method {
 	case http.MethodGet:
