@@ -126,7 +126,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", port),
-		Handler:   middlewares.SecurityHeaders(mux),
+		Handler:   middlewares.Cors(middlewares.SecurityHeaders(mux)),
 		TLSConfig: tlsConfig,
 	}
 
