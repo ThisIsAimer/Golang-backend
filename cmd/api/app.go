@@ -124,9 +124,11 @@ func main() {
 
 	rateLimiter := mid.NewRateLimiter(5, time.Second*5)
 
+	secureMux := rateLimiter.Middleware(mid.CompMiddleware(mid.ResponseTime(mid.SecurityHeaders(mid.Cors(mux)))))
+
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", port),
-		Handler:   rateLimiter.Middleware(mid.CompMiddleware(mid.ResponseTime(mid.SecurityHeaders(mid.Cors(mux))))),
+		Handler:   secureMux,
 		TLSConfig: tlsConfig,
 	}
 
