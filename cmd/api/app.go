@@ -4,7 +4,8 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
-	
+	"time"
+
 	mid "simpleapi/internal/api/middlewares"
 )
 
@@ -121,9 +122,11 @@ func main() {
 		MinVersion: tls.VersionTLS12,
 	}
 
+	rateLimiter := mid.NewRateLimiter(5, time.Second*5)
+
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", port),
-		Handler:   mid.CompMiddleware(mid.ResponseTime(mid.SecurityHeaders(mid.Cors(mux)))),
+		Handler:   rateLimiter.Middleware(mid.CompMiddleware(mid.ResponseTime(mid.SecurityHeaders(mid.Cors(mux))))),
 		TLSConfig: tlsConfig,
 	}
 
