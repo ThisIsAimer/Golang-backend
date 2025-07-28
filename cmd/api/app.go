@@ -28,9 +28,13 @@ func homeRoute(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Home. with: Post")
 		fmt.Println("quary:", r.URL.Query())
+	
 		r.ParseForm()
-		fmt.Println("form:", r.Form)
-		fmt.Println("form:", r.Form.Get("allowedParam"))
+
+		// r.form includes quary parameters
+		// to get just post form we use r.PostForm
+		fmt.Println("form:", r.PostForm)
+		fmt.Println("form:", r.PostForm.Get("allowedParam"))
 	case http.MethodPut:
 		fmt.Fprintln(w, "accessed : Home. with: Put")
 	case http.MethodPatch:

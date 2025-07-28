@@ -37,8 +37,8 @@ func filterQueryParams(r *http.Request, whitelist []string) {
 
 	for k, v := range query {
 		if len(v) > 1 {
-			//query.Set(k, v[0]) //first value
-			query.Set(k,v[len(v)-1]) //last value
+			query.Set(k, v[0]) //first value
+			// query.Set(k,v[len(v)-1]) //last value
 		}
 
 		if !isWhiteListerd(k, whitelist) {
@@ -57,14 +57,13 @@ func filterBodyParams(r *http.Request, whitelist []string) {
 		return
 	}
 
-	for k, v := range r.Form {
+	for k, v := range r.PostForm {
 		if len(v) > 1 {
-			r.Form.Set(k, v[0]) //first value
-			//r.Form.Set(k,v[len(v)-1]) //last value
+			r.PostForm.Set(k, v[0]) //first value
+			// r.PostForm.Set(k, v[len(v)-1]) //last value
 		}
-
 		if !isWhiteListerd(k, whitelist) {
-			delete(r.Form, k)
+			delete(r.PostForm, k)
 		}
 	}
 }
