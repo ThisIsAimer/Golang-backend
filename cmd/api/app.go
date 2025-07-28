@@ -27,7 +27,7 @@ func homeRoute(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "accessed : Home. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Home. with: Post")
-		fmt.Println("quary:", r.URL.Query())
+		fmt.Println("query:", r.URL.Query())
 	
 		r.ParseForm()
 
@@ -136,7 +136,7 @@ func main() {
 		CheckQuery: true,
 		CheckBody: true,
 		CheckBodyForContentType: "application/x-www-form-urlencoded",
-		WhiteList: []string{"allowedParam"},
+		WhiteList: []string{"allowedParam", "sortOrder", "sortBy", "name", "age", "class"},
 	}
 
 	hppMiddleware := mid.Hpp(*hppSettings)
