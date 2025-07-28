@@ -7,7 +7,7 @@ import (
 )
 
 type HppOptions struct {
-	CheckQuary              bool
+	CheckQuery              bool
 	CheckBody               bool
 	CheckBodyForContentType string
 	WhiteList               []string
@@ -19,6 +19,9 @@ func Hpp(options HppOptions) func(http.Handler) http.Handler {
 			if options.CheckBody && r.Method == http.MethodPost && isCorrectContentType(r, options.CheckBodyForContentType) {
 				filterBodyParams(r, options.WhiteList)
 			}
+			if options.CheckQuery && r.URL.Query() != nil {
+				filterQueryParams(r, options.WhiteList)
+			}
 			next.ServeHTTP(w, r)
 		})
 	}
@@ -27,6 +30,25 @@ func Hpp(options HppOptions) func(http.Handler) http.Handler {
 func isCorrectContentType(r *http.Request, contentType string) bool {
 	return strings.Contains(r.Header.Get("Content-Type"), contentType)
 }
+
+func filterQueryParams(r *http.Request, whitelist []string) {
+
+	query := r.URL.Query()
+
+	for k, v := range query {
+		if len(v) > 1 {
+			//query.Set(k, v[0]) //first value
+			query.Set(k,v[len(v)-1]) //last value
+		}
+
+		if !isWhiteListerd(k, whitelist) {
+			query.Del(k)
+		}
+	}
+
+	r.URL.RawQuery = query.Encode()
+}
+
 
 func filterBodyParams(r *http.Request, whitelist []string) {
 	err := r.ParseForm()
@@ -38,7 +60,7 @@ func filterBodyParams(r *http.Request, whitelist []string) {
 	for k, v := range r.Form {
 		if len(v) > 1 {
 			r.Form.Set(k, v[0]) //first value
-			// r.Form.Set(k,v[len(v)-1]) //last value
+			//r.Form.Set(k,v[len(v)-1]) //last value
 		}
 
 		if !isWhiteListerd(k, whitelist) {
@@ -49,7 +71,7 @@ func filterBodyParams(r *http.Request, whitelist []string) {
 
 func isWhiteListerd(param string, whitelist []string) bool {
 	for _, v := range whitelist {
-		if param == strings.ToLower(v) {
+		if param == v {
 			return true
 		}
 	}

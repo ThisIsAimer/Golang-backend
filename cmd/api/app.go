@@ -27,6 +27,10 @@ func homeRoute(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "accessed : Home. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Home. with: Post")
+		fmt.Println("quary:", r.URL.Query())
+		r.ParseForm()
+		fmt.Println("form:", r.Form)
+		fmt.Println("form:", r.Form.Get("allowedParam"))
 	case http.MethodPut:
 		fmt.Fprintln(w, "accessed : Home. with: Put")
 	case http.MethodPatch:
@@ -124,7 +128,16 @@ func main() {
 
 	rateLimiter := mid.NewRateLimiter(5, time.Second*5)
 
-	secureMux := rateLimiter.Middleware(mid.CompMiddleware(mid.ResponseTime(mid.SecurityHeaders(mid.Cors(mux)))))
+	hppSettings := &mid.HppOptions{
+		CheckQuery: true,
+		CheckBody: true,
+		CheckBodyForContentType: "application/x-www-form-urlencoded",
+		WhiteList: []string{"allowedParam"},
+	}
+
+	hppMiddleware := mid.Hpp(*hppSettings)
+
+	secureMux := hppMiddleware(rateLimiter.Middleware(mid.CompMiddleware(mid.ResponseTime(mid.SecurityHeaders(mid.Cors(mux))))))
 
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", port),
