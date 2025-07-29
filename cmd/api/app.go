@@ -133,7 +133,7 @@ func main() {
 
 	hppMiddleware := mid.Hpp(*hppSettings)
 
-	secureMux := hppMiddleware(rateLimiter.Middleware(mid.CompMiddleware(mid.ResponseTime(mid.SecurityHeaders(mid.Cors(mux))))))
+	secureMux := mid.Cors(rateLimiter.Middleware(mid.ResponseTime(mid.SecurityHeaders(mid.CompMiddleware(hppMiddleware(mux))))))
 
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", port),
