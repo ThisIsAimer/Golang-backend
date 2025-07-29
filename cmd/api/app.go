@@ -27,14 +27,6 @@ func homeRoute(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "accessed : Home. with: Get")
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Home. with: Post")
-		fmt.Println("query:", r.URL.Query())
-	
-		r.ParseForm()
-
-		// r.form includes quary parameters
-		// to get just post form we use r.PostForm
-		fmt.Println("form:", r.PostForm)
-		fmt.Println("form:", r.PostForm.Get("allowedParam"))
 	case http.MethodPut:
 		fmt.Fprintln(w, "accessed : Home. with: Put")
 	case http.MethodPatch:
@@ -133,10 +125,10 @@ func main() {
 	rateLimiter := mid.NewRateLimiter(5, time.Second*5)
 
 	hppSettings := &mid.HppOptions{
-		CheckQuery: true,
-		CheckBody: true,
+		CheckQuery:              true,
+		CheckBody:               true,
 		CheckBodyForContentType: "application/x-www-form-urlencoded",
-		WhiteList: []string{"allowedParam", "sortOrder", "sortBy", "name", "age", "class"},
+		WhiteList:               []string{"allowedParam", "sortOrder", "sortBy", "name", "age", "class"},
 	}
 
 	hppMiddleware := mid.Hpp(*hppSettings)
