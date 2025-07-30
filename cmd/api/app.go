@@ -134,8 +134,8 @@ func main() {
 	hppMiddleware := mid.Hpp(*hppSettings)
 
 	// secureMux := mid.Cors(rateLimiter.Middleware(mid.ResponseTime(mid.SecurityHeaders(mid.CompMiddleware(hppMiddleware(mux))))))
-	secureMux := applyMiddlewares(mux,hppMiddleware,mid.CompMiddleware,mid.SecurityHeaders,mid.ResponseTime,rateLimiter.Middleware,mid.Cors)
-
+	// secureMux := applyMiddlewares(mux,hppMiddleware,mid.CompMiddleware,mid.SecurityHeaders,mid.ResponseTime,rateLimiter.Middleware,mid.Cors)
+	 secureMux := applyMiddlewares(mux, hppMiddleware, rateLimiter.Middleware) // for now faster processing
 
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", port),
