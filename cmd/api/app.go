@@ -133,7 +133,9 @@ func main() {
 
 	hppMiddleware := mid.Hpp(*hppSettings)
 
-	secureMux := mid.Cors(rateLimiter.Middleware(mid.ResponseTime(mid.SecurityHeaders(mid.CompMiddleware(hppMiddleware(mux))))))
+	// secureMux := mid.Cors(rateLimiter.Middleware(mid.ResponseTime(mid.SecurityHeaders(mid.CompMiddleware(hppMiddleware(mux))))))
+	secureMux := applyMiddlewares(mux,hppMiddleware,mid.CompMiddleware,mid.SecurityHeaders,mid.ResponseTime,rateLimiter.Middleware,mid.Cors)
+
 
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", port),
@@ -149,4 +151,14 @@ func main() {
 		return
 	}
 
+}
+
+type Middleware func(http.Handler) http.Handler
+
+func applyMiddlewares(handler http.Handler, middlewares ...Middleware) http.Handler {
+
+	for _, v := range middlewares {
+		handler = v(handler)
+	}
+	return handler
 }

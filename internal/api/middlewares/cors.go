@@ -22,6 +22,7 @@ func Cors(next http.Handler) http.Handler {
 			fmt.Println("access allowed")
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 		} else {
+			fmt.Println("forbitten access")
 			http.Error(w, "not allowed by Cors", http.StatusForbidden)
 			return
 		}
