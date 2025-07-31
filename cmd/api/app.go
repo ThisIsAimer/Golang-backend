@@ -14,7 +14,7 @@ import (
 // for now
 type Teacher struct {
 	ID         int
-	FirestName string
+	FirstName string
 	LastName   string
 	Class      string
 	Subject    string
@@ -29,8 +29,8 @@ var (
 func init() {
 	teachers[nextId] = Teacher{
 		ID:         nextId,
-		FirestName: "Rudra",
-		LastName:   "ABC",
+		FirstName: "Rudra",
+		LastName:   "Sivdev",
 		Class:      "6A",
 		Subject:    "math",
 	}
@@ -38,18 +38,53 @@ func init() {
 
 	teachers[nextId] = Teacher{
 		ID:         nextId,
-		FirestName: "Rudrina",
-		LastName:   "ABC",
-		Class:      "10A",
+		FirstName: "Rudrina",
+		LastName:   "ShivDev",
+		Class:      "10B",
 		Subject:    "computer",
+	}
+
+	nextId++
+
+	teachers[nextId] = Teacher{
+		ID:         nextId,
+		FirstName: "Tanjiro",
+		LastName:   "Kamado",
+		Class:      "all",
+		Subject:    "Dance",
+	}
+
+	nextId++
+
+	teachers[nextId] = Teacher{
+		ID:         nextId,
+		FirstName: "Zenitsu",
+		LastName:   "Agatsuma",
+		Class:      "8C",
+		Subject:    "Science",
+	}
+
+	nextId++
+
+	teachers[nextId] = Teacher{
+		ID:         nextId,
+		FirstName: "Inosuke",
+		LastName:   "Hashibira",
+		Class:      "5D",
+		Subject:    "Sports",
 	}
 
 }
 
 func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
-	teacherList := make([]Teacher, 0)
+	firstName := r.URL.Query().Get("first_name")
+	lastName := r.URL.Query().Get("last_name")
+
+	teacherList := make([]Teacher, 0, len(teachers))
 	for _, teacher := range teachers {
-		teacherList = append(teacherList, teacher)
+		if (firstName == "" || teacher.FirstName == firstName) && (lastName == "" || teacher.LastName == lastName){
+			teacherList = append(teacherList, teacher)
+		}
 	}
 
 	response := struct {
@@ -58,11 +93,11 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		Data   []Teacher `json:"data"`
 	}{
 		Status: "success",
-		Count:  len(teachers),
+		Count:  len(teacherList),
 		Data:   teacherList,
 	}
 
-	w.Header().Set("ContentType", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -179,7 +214,7 @@ func main() {
 		CheckQuery:              true,
 		CheckBody:               true,
 		CheckBodyForContentType: "application/x-www-form-urlencoded",
-		WhiteList:               []string{"allowedParam", "sortOrder", "sortBy", "name", "age", "class"},
+		WhiteList:               []string{"allowedParam", "sortOrder", "sortBy", "name", "age", "class", "first_name", "last_name"},
 	}
 
 	hppMiddleware := mid.Hpp(*hppSettings)
