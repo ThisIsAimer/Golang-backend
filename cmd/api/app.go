@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -21,33 +22,48 @@ type Teacher struct {
 
 var (
 	teachers = make(map[int]Teacher)
-	mutex = &sync.Mutex{}
-	nextId = 1
+	mutex    = &sync.Mutex{}
+	nextId   = 1
 )
 
-func init(){
+func init() {
 	teachers[nextId] = Teacher{
-		ID: nextId,
+		ID:         nextId,
 		FirestName: "Rudra",
-		LastName: "ABC",
-		Class: "6A",
-		Subject: "math",
+		LastName:   "ABC",
+		Class:      "6A",
+		Subject:    "math",
 	}
 	nextId++
 
 	teachers[nextId] = Teacher{
-		ID: nextId,
+		ID:         nextId,
 		FirestName: "Rudrina",
-		LastName: "ABC",
-		Class: "10A",
-		Subject: "computer",
+		LastName:   "ABC",
+		Class:      "10A",
+		Subject:    "computer",
 	}
 
 }
 
+func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
+	teacherList := make([]Teacher, 0)
+	for _, teacher := range teachers {
+		teacherList = append(teacherList, teacher)
+	}
 
-func getTeachersHandler(w http.ResponseWriter, r *http.Request){
+	response := struct {
+		Status string    `json:"status"`
+		Count  int       `json:"count"`
+		Data   []Teacher `json:"data"`
+	}{
+		Status: "success",
+		Count:  len(teachers),
+		Data:   teacherList,
+	}
 
+	w.Header().Set("ContentType", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
 
 // http methods are get, post, put, patch, delete
@@ -81,7 +97,7 @@ func teachersRoute(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		fmt.Fprintln(w, "accessed : Teachers. with: Get")
+		getTeachersHandler(w, r)
 	case http.MethodPost:
 		fmt.Fprintln(w, "accessed : Teachers. with: Post")
 	case http.MethodPut:
