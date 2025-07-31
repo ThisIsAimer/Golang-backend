@@ -4,15 +4,50 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	mid "simpleapi/internal/api/middlewares"
 )
 
-type user struct {
-	Name  string `json:"name"`
-	Age   int    `json:"age"`
-	Place string `json:"place"`
+// for now
+type Teacher struct {
+	ID         int
+	FirestName string
+	LastName   string
+	Class      string
+	Subject    string
+}
+
+var (
+	teachers = make(map[int]Teacher)
+	mutex = &sync.Mutex{}
+	nextId = 1
+)
+
+func init(){
+	teachers[nextId] = Teacher{
+		ID: nextId,
+		FirestName: "Rudra",
+		LastName: "ABC",
+		Class: "6A",
+		Subject: "math",
+	}
+	nextId++
+
+	teachers[nextId] = Teacher{
+		ID: nextId,
+		FirestName: "Rudrina",
+		LastName: "ABC",
+		Class: "10A",
+		Subject: "computer",
+	}
+
+}
+
+
+func getTeachersHandler(w http.ResponseWriter, r *http.Request){
+
 }
 
 // http methods are get, post, put, patch, delete
@@ -135,7 +170,7 @@ func main() {
 
 	// secureMux := mid.Cors(rateLimiter.Middleware(mid.ResponseTime(mid.SecurityHeaders(mid.CompMiddleware(hppMiddleware(mux))))))
 	// secureMux := applyMiddlewares(mux,hppMiddleware,mid.CompMiddleware,mid.SecurityHeaders,mid.ResponseTime,rateLimiter.Middleware,mid.Cors)
-	 secureMux := applyMiddlewares(mux, hppMiddleware, rateLimiter.Middleware) // for now faster processing
+	secureMux := applyMiddlewares(mux, hppMiddleware, rateLimiter.Middleware) // for now faster processing
 
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", port),
