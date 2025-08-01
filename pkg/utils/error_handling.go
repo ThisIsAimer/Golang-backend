@@ -1,8 +1,13 @@
-package pkg
+package utils
 
-import "fmt"
+import "net/http"
 
-func errorHandling(){
-	fmt.Println("hello world")
+type Middleware func(http.Handler) http.Handler
 
+func ApplyMiddlewares(handler http.Handler, middlewares ...Middleware) http.Handler {
+
+	for _, v := range middlewares {
+		handler = v(handler)
+	}
+	return handler
 }

@@ -2,274 +2,16 @@ package main
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
-	"sync"
 	"time"
 
 	mid "simpleapi/internal/api/middlewares"
+	"simpleapi/internal/api/router"
+	"simpleapi/pkg/utils"
 )
-
-// for now
-type Teacher struct {
-	ID        int    `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Class     string `json:"class"`
-	Subject   string `json:"subject"`
-}
-
-var (
-	teachers = make(map[int]Teacher)
-	mutex    = &sync.Mutex{}
-	nextId   = 1
-)
-
-func init() {
-	teachers[nextId] = Teacher{
-		ID:        nextId,
-		FirstName: "Rudra",
-		LastName:  "Shivdev",
-		Class:     "6A",
-		Subject:   "math",
-	}
-	nextId++
-
-	teachers[nextId] = Teacher{
-		ID:        nextId,
-		FirstName: "Rudrina",
-		LastName:  "Shivdev",
-		Class:     "10B",
-		Subject:   "computer",
-	}
-
-	nextId++
-
-	teachers[nextId] = Teacher{
-		ID:        nextId,
-		FirstName: "Tanjiro",
-		LastName:  "Kamado",
-		Class:     "all",
-		Subject:   "Dance",
-	}
-
-	nextId++
-
-	teachers[nextId] = Teacher{
-		ID:        nextId,
-		FirstName: "Zenitsu",
-		LastName:  "Agatsuma",
-		Class:     "8C",
-		Subject:   "Science",
-	}
-
-	nextId++
-
-	teachers[nextId] = Teacher{
-		ID:        nextId,
-		FirstName: "Inosuke",
-		LastName:  "Hashibira",
-		Class:     "5D",
-		Subject:   "Sports",
-	}
-
-}
-
-func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
-
-	path := strings.TrimPrefix(r.URL.Path, "/teachers/")
-	idstr := strings.TrimSuffix(path, "/")
-
-	w.Header().Set("Content-Type", "application/json")
-
-	//handle quary parametre
-	if idstr == "" {
-		firstName := r.URL.Query().Get("first_name")
-		lastName := r.URL.Query().Get("last_name")
-
-		teacherList := make([]Teacher, 0, len(teachers))
-		for _, teacher := range teachers {
-			if (firstName == "" || teacher.FirstName == firstName) && (lastName == "" || teacher.LastName == lastName) {
-				teacherList = append(teacherList, teacher)
-			}
-		}
-
-		response := struct {
-			Status string    `json:"status"`
-			Count  int       `json:"count"`
-			Data   []Teacher `json:"data"`
-		}{
-			Status: "success",
-			Count:  len(teacherList),
-			Data:   teacherList,
-		}
-
-		err := json.NewEncoder(w).Encode(response)
-		if err != nil {
-			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-			return
-		}
-	} else {
-		//handle path parametre
-		id, err := strconv.Atoi(idstr)
-		if err != nil {
-			http.Error(w, "Invalid id", http.StatusBadRequest)
-			return
-		}
-
-		tearcher, exists := teachers[id]
-		if !exists {
-			http.Error(w, "Teacher not found", http.StatusNotFound)
-			return
-		}
-		err = json.NewEncoder(w).Encode(tearcher)
-		if err != nil {
-			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-			return
-		}
-	}
-
-}
-
-func postTeachersHandler(w http.ResponseWriter, r *http.Request) {
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	var newTeachers []Teacher
-	err := json.NewDecoder(r.Body).Decode(&newTeachers)
-	if err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	for i, teacher := range newTeachers {
-		nextId++
-		newTeachers[i].ID = nextId
-		
-		teacher.ID = nextId
-		teachers[nextId] = teacher
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	response := struct {
-		Status string    `json:"status"`
-		Count  int       `json:"count"`
-		Data   []Teacher `json:"data"`
-	}{
-		Status: "Success",
-		Count:  len(newTeachers),
-		Data:   newTeachers,
-	}
-
-	err = json.NewEncoder(w).Encode(response)
-	if err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		return
-	}
-}
-
-// http methods are get, post, put, patch, delete
-
-func homeRoute(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Content-Type", "string")
-	fmt.Println("someone accessed: home")
-
-	switch r.Method {
-	case http.MethodGet:
-		fmt.Fprintln(w, "accessed : Home. with: Get")
-	case http.MethodPost:
-		fmt.Fprintln(w, "accessed : Home. with: Post")
-	case http.MethodPut:
-		fmt.Fprintln(w, "accessed : Home. with: Put")
-	case http.MethodPatch:
-		fmt.Fprintln(w, "accessed : Home. with: Patch")
-	case http.MethodDelete:
-		fmt.Fprintln(w, "accessed : Home. with: Delete")
-	default:
-		fmt.Fprintln(w, "accessed : Home")
-
-	}
-
-}
-
-func teachersRoute(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "string")
-	fmt.Println("someone accessed: Teachers route")
-
-	switch r.Method {
-	case http.MethodGet:
-		getTeachersHandler(w, r)
-	case http.MethodPost:
-		postTeachersHandler(w, r)
-	case http.MethodPut:
-		fmt.Fprintln(w, "accessed : Teachers. with: Put")
-	case http.MethodPatch:
-		fmt.Fprintln(w, "accessed : Teachers. with: Patch")
-	case http.MethodDelete:
-		fmt.Fprintln(w, "accessed : Teachers. with: Delete")
-	default:
-		fmt.Fprintln(w, "accessed : Teachers")
-
-	}
-}
-
-func studentsRoute(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "string")
-	fmt.Println("someone accessed: Students route")
-
-	switch r.Method {
-	case http.MethodGet:
-		fmt.Fprintln(w, "accessed : Students. with: Get")
-	case http.MethodPost:
-		fmt.Fprintln(w, "accessed : Students. with: Post")
-	case http.MethodPut:
-		fmt.Fprintln(w, "accessed : Students. with: Put")
-	case http.MethodPatch:
-		fmt.Fprintln(w, "accessed : Students. with: Patch")
-	case http.MethodDelete:
-		fmt.Fprintln(w, "accessed : Students. with: Delete")
-	default:
-		fmt.Fprintln(w, "accessed : Students")
-
-	}
-}
-
-func execsRoute(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "string")
-	fmt.Println("someone accessed: Execs route")
-	fmt.Println("method:", r.Method)
-
-	switch r.Method {
-	case http.MethodGet:
-		fmt.Fprintln(w, "accessed : Executives. with: Get")
-	case http.MethodPost:
-		fmt.Fprintln(w, "accessed : Executives. with: Post")
-	case http.MethodPut:
-		fmt.Fprintln(w, "accessed : Executives. with: Put")
-	case http.MethodPatch:
-		fmt.Fprintln(w, "accessed : Executives. with: Patch")
-	case http.MethodDelete:
-		fmt.Fprintln(w, "accessed : Executives. with: Delete")
-	default:
-		fmt.Fprintln(w, "accessed : Executives")
-
-	}
-}
 
 func main() {
-
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/", homeRoute)
-	mux.HandleFunc("/teachers/", teachersRoute)
-	mux.HandleFunc("/students/", studentsRoute)
-	mux.HandleFunc("/execs/", execsRoute)
 
 	port := 3000
 
@@ -291,9 +33,11 @@ func main() {
 
 	hppMiddleware := mid.Hpp(*hppSettings)
 
-	// secureMux := mid.Cors(rateLimiter.Middleware(mid.ResponseTime(mid.SecurityHeaders(mid.CompMiddleware(hppMiddleware(mux))))))
-	// secureMux := applyMiddlewares(mux,hppMiddleware,mid.CompMiddleware,mid.SecurityHeaders,mid.ResponseTime,rateLimiter.Middleware,mid.Cors)
-	secureMux := applyMiddlewares(mux, hppMiddleware, rateLimiter.Middleware) // for now faster processing
+	router := router.Router()
+
+	// secureMux := mid.Cors(rateLimiter.Middleware(mid.ResponseTime(mid.SecurityHeaders(mid.CompMiddleware(hppMiddleware(router))))))
+	// secureMux := applyMiddlewares(router,hppMiddleware,mid.CompMiddleware,mid.SecurityHeaders,mid.ResponseTime,rateLimiter.Middleware,mid.Cors)
+	secureMux := utils.ApplyMiddlewares(router, hppMiddleware, rateLimiter.Middleware) // for now faster processing
 
 	server := &http.Server{
 		Addr:      fmt.Sprintf(":%d", port),
@@ -309,14 +53,4 @@ func main() {
 		return
 	}
 
-}
-
-type Middleware func(http.Handler) http.Handler
-
-func applyMiddlewares(handler http.Handler, middlewares ...Middleware) http.Handler {
-
-	for _, v := range middlewares {
-		handler = v(handler)
-	}
-	return handler
 }
