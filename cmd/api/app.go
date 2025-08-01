@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -30,7 +32,7 @@ func init() {
 	teachers[nextId] = Teacher{
 		ID:         nextId,
 		FirstName: "Rudra",
-		LastName:   "Sivdev",
+		LastName:   "Shivdev",
 		Class:      "6A",
 		Subject:    "math",
 	}
@@ -39,7 +41,7 @@ func init() {
 	teachers[nextId] = Teacher{
 		ID:         nextId,
 		FirstName: "Rudrina",
-		LastName:   "ShivDev",
+		LastName:   "Shivdev",
 		Class:      "10B",
 		Subject:    "computer",
 	}
@@ -77,28 +79,52 @@ func init() {
 }
 
 func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
-	firstName := r.URL.Query().Get("first_name")
-	lastName := r.URL.Query().Get("last_name")
 
-	teacherList := make([]Teacher, 0, len(teachers))
-	for _, teacher := range teachers {
-		if (firstName == "" || teacher.FirstName == firstName) && (lastName == "" || teacher.LastName == lastName){
-			teacherList = append(teacherList, teacher)
-		}
-	}
-
-	response := struct {
-		Status string    `json:"status"`
-		Count  int       `json:"count"`
-		Data   []Teacher `json:"data"`
-	}{
-		Status: "success",
-		Count:  len(teacherList),
-		Data:   teacherList,
-	}
+	path := strings.TrimPrefix(r.URL.Path,"/teachers/")
+	idstr := strings.TrimSuffix(path,"/")
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+
+
+	//handle quary parametre
+	if idstr == ""{
+		firstName := r.URL.Query().Get("first_name")
+		lastName := r.URL.Query().Get("last_name")
+
+		teacherList := make([]Teacher, 0, len(teachers))
+		for _, teacher := range teachers {
+			if (firstName == "" || teacher.FirstName == firstName) && (lastName == "" || teacher.LastName == lastName){
+				teacherList = append(teacherList, teacher)
+			}
+		}
+
+		response := struct {
+			Status string    `json:"status"`
+			Count  int       `json:"count"`
+			Data   []Teacher `json:"data"`
+		}{
+			Status: "success",
+			Count:  len(teacherList),
+			Data:   teacherList,
+		}
+
+		json.NewEncoder(w).Encode(response)
+	} else{
+		//handle path parametre
+		id, err := strconv.Atoi(idstr)
+		if err != nil {
+			http.Error(w,"Invalid id",http.StatusBadRequest)
+			return
+		}
+
+		tearcher , exists :=  teachers[id]
+		if !exists{
+			http.Error(w,"Teacher not found",http.StatusNotFound)
+			return
+		}
+		json.NewEncoder(w).Encode(tearcher)
+	}
+
 }
 
 // http methods are get, post, put, patch, delete
@@ -195,9 +221,9 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", homeRoute)
-	mux.HandleFunc("/teachers", teachersRoute)
-	mux.HandleFunc("/students", studentsRoute)
-	mux.HandleFunc("/execs", execsRoute)
+	mux.HandleFunc("/teachers/", teachersRoute)
+	mux.HandleFunc("/students/", studentsRoute)
+	mux.HandleFunc("/execs/", execsRoute)
 
 	port := 3000
 
