@@ -4,23 +4,33 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	mid "simpleapi/internal/api/middlewares"
 	"simpleapi/internal/api/router"
 	"simpleapi/internal/repositories/sqlconnect"
 	"simpleapi/pkg/utils"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// used for loading .env variables to environment variables list
+	err := godotenv.Load(`cmd\api\.env`)
+	if err != nil {
+		fmt.Println("error loading .env", err)
+		return 
+	}
 
-	_, err := sqlconnect.ConnectDB("dbever_test")
+	db_name := os.Getenv("DB_NAME")
+
+	_, err = sqlconnect.ConnectDB(db_name)
 	if err != nil {
 		fmt.Println("error connecting to db", err)
 		return
 	}
 
-	port := 3000
+	port := os.Getenv("API_PORT")
 
 	key := `certificate\key.pem`
 	cert := `certificate\certificate.pem`
@@ -47,12 +57,12 @@ func main() {
 	secureMux := utils.ApplyMiddlewares(router, hppMiddleware, rateLimiter.Middleware) // for now faster processing
 
 	server := &http.Server{
-		Addr:      fmt.Sprintf(":%d", port),
+		Addr:      port,
 		Handler:   secureMux,
 		TLSConfig: tlsConfig,
 	}
 
-	fmt.Println("server is running on port:", port)
+	fmt.Println("server is running on port", port)
 
 	err = server.ListenAndServeTLS(cert, key)
 	if err != nil {
