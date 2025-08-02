@@ -8,6 +8,8 @@
 - go clean -modcache
 - go mod verify
 
+### to use wsl (wsl -d ubuntu)
+
 #### module is a collection of related packages
 
 ## https cert cmd

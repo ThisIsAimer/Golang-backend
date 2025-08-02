@@ -8,10 +8,17 @@ import (
 
 	mid "simpleapi/internal/api/middlewares"
 	"simpleapi/internal/api/router"
+	"simpleapi/internal/repositories/sqlconnect"
 	"simpleapi/pkg/utils"
 )
 
 func main() {
+
+	_, err := sqlconnect.ConnectDB("dbever_test")
+	if err != nil {
+		fmt.Println("error connecting to db", err)
+		return
+	}
 
 	port := 3000
 
@@ -47,7 +54,7 @@ func main() {
 
 	fmt.Println("server is running on port:", port)
 
-	err := server.ListenAndServeTLS(cert, key)
+	err = server.ListenAndServeTLS(cert, key)
 	if err != nil {
 		fmt.Println("error is:", err)
 		return
