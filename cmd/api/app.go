@@ -32,11 +32,25 @@ func main() {
 
 	rateLimiter := mid.NewRateLimiter(5, time.Second*5)
 
+	whiteList := []string{
+		"sortOrder", 
+		"sortBy", 
+
+		// genral
+		"first_name", 
+		"last_name",
+		"class", 
+
+		// teachers
+		"email", 
+		"subject",
+	}
+
 	hppSettings := &mid.HppOptions{
 		CheckQuery:              true,
 		CheckBody:               true,
 		CheckBodyForContentType: "application/x-www-form-urlencoded",
-		WhiteList:               []string{"allowedParam", "sortOrder", "sortBy", "name", "age", "class", "first_name", "last_name"},
+		WhiteList:               whiteList,
 	}
 
 	hppMiddleware := mid.Hpp(*hppSettings)

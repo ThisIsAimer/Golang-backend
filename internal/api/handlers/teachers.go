@@ -39,21 +39,18 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	//handle quary parametre
 	if idstr == "" {
-		firstName := r.URL.Query().Get("first_name")
-		lastName := r.URL.Query().Get("last_name")
-
+		
 		query := "SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE 1=1 "
-		var args []any
 
-		if firstName != ""{
-			query += "AND first_name = ?"
-			args = append(args, firstName)
+		queryParams := []string{
+			"first_name", 
+			"last_name", 
+			"email", 
+			"class", 
+			"subject",
 		}
-
-		if lastName != ""{
-			query += "AND last_name = ?"
-			args = append(args, lastName)
-		}
+		
+		query, args := addFilters(r, query,queryParams)
 
 		rows, err := db.Query(query,args...)
 		if err != nil {
@@ -198,4 +195,21 @@ func TeachersRoute(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "accessed : Teachers")
 
 	}
+}
+
+
+func addFilters(r *http.Request, query string, params []string) (string, []any) {
+
+	var args []any
+
+	for _, value :=  range params{
+		result := r.URL.Query().Get(value)
+		if result != ""{
+			query += "AND "+value+ "= ? "
+			args = append(args, result)
+		}
+	}
+
+	return query, args
+
 }
