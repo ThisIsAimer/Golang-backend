@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -18,10 +19,18 @@ import (
 var (
 	teachers = make(map[int]models.Teacher)
 	mutex    = &sync.Mutex{}
-	nextId   = 1
 )
 
 func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
+
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		http.Error(w, "error connecting to server", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
 
 	path := strings.TrimPrefix(r.URL.Path, "/teachers/")
 	idstr := strings.TrimSuffix(path, "/")
@@ -41,8 +50,8 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		response := struct {
-			Status string    `json:"status"`
-			Count  int       `json:"count"`
+			Status string           `json:"status"`
+			Count  int              `json:"count"`
 			Data   []models.Teacher `json:"data"`
 		}{
 			Status: "success",
@@ -63,12 +72,20 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		tearcher, exists := teachers[id]
-		if !exists {
-			http.Error(w, "Teacher not found", http.StatusNotFound)
+		var teacher models.Teacher
+
+		err = db.QueryRow("SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE id = ?", id).
+		Scan(&teacher.ID,&teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
+		if err == sql.ErrNoRows {
+			http.Error(w, "teacher not found", http.StatusNotFound)
 			return
+		} else if err != nil{
+			http.Error(w, "Database error", http.StatusInternalServerError)
 		}
-		err = json.NewEncoder(w).Encode(tearcher)
+
+		w.Header().Set("Content-Type", "application/json")
+
+		err = json.NewEncoder(w).Encode(teacher)
 		if err != nil {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
@@ -97,15 +114,15 @@ func postTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	stmt, err := db.Prepare("INSERT INTO teachers(first_name, last_name, email, class, subject) VALUES(?, ?, ?, ?, ?)")
 
 	if err != nil {
-		http.Error(w,"error in praparing sql query", http.StatusInternalServerError)
+		http.Error(w, "error in praparing sql query", http.StatusInternalServerError)
 		return
 	}
 	defer stmt.Close()
 
-	for i, teacher := range newTeachers{
-		res, err := stmt.Exec(teacher.FirstName,teacher.LastName,teacher.Email,teacher.Class,teacher.Subject)
+	for i, teacher := range newTeachers {
+		res, err := stmt.Exec(teacher.FirstName, teacher.LastName, teacher.Email, teacher.Class, teacher.Subject)
 		if err != nil {
-			http.Error(w, "error inserting values in the database", http.StatusInternalServerError)
+			http.Error(w, "error inserting values in the database (email may already exist)", http.StatusInternalServerError)
 			return
 		}
 		lastId, err := res.LastInsertId()
@@ -114,16 +131,15 @@ func postTeachersHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		newTeachers[i].ID = int(lastId)
-		
-	}
 
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
 	response := struct {
-		Status string    `json:"status"`
-		Count  int       `json:"count"`
+		Status string           `json:"status"`
+		Count  int              `json:"count"`
 		Data   []models.Teacher `json:"data"`
 	}{
 		Status: "Success",
