@@ -2,15 +2,19 @@ package router
 
 import (
 	"net/http"
-	"simpleapi/internal/api/handlers"
+
+	home "simpleapi/internal/api/handlers/home_handler"
+	students "simpleapi/internal/api/handlers/student_handler"
+	teachers "simpleapi/internal/api/handlers/teachers_handler"
+	execs "simpleapi/internal/api/handlers/execs_handler"
 )
 
 func Router() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", handlers.HomeRoute)
-	mux.HandleFunc("/teachers/", handlers.TeachersRoute)
-	mux.HandleFunc("/students/", handlers.StudentsRoute)
-	mux.HandleFunc("/execs/", handlers.ExecsRoute)
+	mux.HandleFunc("/", home.HomeRoute)
+	mux.HandleFunc("/teachers/", teachers.TeachersRoute)
+	mux.HandleFunc("/students/", students.StudentsRoute)
+	mux.HandleFunc("/execs/", execs.ExecsRoute)
 	return mux
 }
