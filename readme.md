@@ -10,6 +10,10 @@
 
 ### to use wsl (wsl -d ubuntu)
 
+### imports used!
+- go driver for my sql (github.com/go-sql-driver/mysql)
+- for reading env file (github.com/joho/godotenv)
+
 #### module is a collection of related packages
 
 ## https cert cmd
