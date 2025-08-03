@@ -9,7 +9,6 @@ import (
 
 	mid "simpleapi/internal/api/middlewares"
 	"simpleapi/internal/api/router"
-	"simpleapi/internal/repositories/sqlconnect"
 	"simpleapi/pkg/utils"
 	"github.com/joho/godotenv"
 )
@@ -20,14 +19,6 @@ func main() {
 	if err != nil {
 		fmt.Println("error loading .env", err)
 		return 
-	}
-
-	db_name := os.Getenv("DB_NAME")
-
-	_, err = sqlconnect.ConnectDB(db_name)
-	if err != nil {
-		fmt.Println("error connecting to db", err)
-		return
 	}
 
 	port := os.Getenv("API_PORT")

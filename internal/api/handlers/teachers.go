@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
 
 	"simpleapi/internal/models"
+	"simpleapi/internal/repositories/sqlconnect"
 )
 
 // for now
@@ -18,56 +20,6 @@ var (
 	mutex    = &sync.Mutex{}
 	nextId   = 1
 )
-
-func init() {
-	teachers[nextId] = models.Teacher{
-		ID:        nextId,
-		FirstName: "Rudra",
-		LastName:  "Shivdev",
-		Class:     "6A",
-		Subject:   "math",
-	}
-	nextId++
-
-	teachers[nextId] = models.Teacher{
-		ID:        nextId,
-		FirstName: "Rudrina",
-		LastName:  "Shivdev",
-		Class:     "10B",
-		Subject:   "computer",
-	}
-
-	nextId++
-
-	teachers[nextId] = models.Teacher{
-		ID:        nextId,
-		FirstName: "Tanjiro",
-		LastName:  "Kamado",
-		Class:     "all",
-		Subject:   "Dance",
-	}
-
-	nextId++
-
-	teachers[nextId] = models.Teacher{
-		ID:        nextId,
-		FirstName: "Zenitsu",
-		LastName:  "Agatsuma",
-		Class:     "8C",
-		Subject:   "Science",
-	}
-
-	nextId++
-
-	teachers[nextId] = models.Teacher{
-		ID:        nextId,
-		FirstName: "Inosuke",
-		LastName:  "Hashibira",
-		Class:     "5D",
-		Subject:   "Sports",
-	}
-
-}
 
 func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -126,23 +78,45 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func postTeachersHandler(w http.ResponseWriter, r *http.Request) {
-	mutex.Lock()
-	defer mutex.Unlock()
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		http.Error(w, "error connecting to server", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
 
 	var newTeachers []models.Teacher
-	err := json.NewDecoder(r.Body).Decode(&newTeachers)
+	err = json.NewDecoder(r.Body).Decode(&newTeachers)
 	if err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	for i, teacher := range newTeachers {
-		nextId++
-		newTeachers[i].ID = nextId
+	stmt, err := db.Prepare("INSERT INTO teachers(first_name, last_name, email, class, subject) VALUES(?, ?, ?, ?, ?)")
 
-		teacher.ID = nextId
-		teachers[nextId] = teacher
+	if err != nil {
+		http.Error(w,"error in praparing sql query", http.StatusInternalServerError)
+		return
 	}
+	defer stmt.Close()
+
+	for i, teacher := range newTeachers{
+		res, err := stmt.Exec(teacher.FirstName,teacher.LastName,teacher.Email,teacher.Class,teacher.Subject)
+		if err != nil {
+			http.Error(w, "error inserting values in the database", http.StatusInternalServerError)
+			return
+		}
+		lastId, err := res.LastInsertId()
+		if err != nil {
+			http.Error(w, "error getting last inserted id", http.StatusInternalServerError)
+			return
+		}
+		newTeachers[i].ID = int(lastId)
+		
+	}
+
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
