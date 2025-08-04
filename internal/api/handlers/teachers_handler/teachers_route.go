@@ -18,7 +18,7 @@ func TeachersRoute(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPut:
 		PutTeachersHandler(w,r)
 	case http.MethodPatch:
-		fmt.Fprintln(w, "accessed : Teachers. with: Patch")
+		PatchTeachersHandler(w,r)
 	case http.MethodDelete:
 		fmt.Fprintln(w, "accessed : Teachers. with: Delete")
 	default:
