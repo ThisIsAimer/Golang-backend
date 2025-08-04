@@ -42,29 +42,7 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 		query, args := addFilters(r, query, queryParams)
 
-		sortParams := r.URL.Query()["sortby"]
-
-		if len(sortParams) != 0 {
-			for i, params := range sortParams {
-				parts := strings.Split(params, ":")
-				if len(parts) != 2 {
-					continue
-				}
-				field, order := parts[0], parts[1]
-				if !isValidsortOrder(order) || !isValidField(field) {
-					continue
-				}
-				
-				query += "ORDER BY "
-
-				if i > 0 {
-					query += " , "
-				}
-
-				query += field + " " + order
-
-			}
-		}
+		query = addSorting(r, query)
 
 		rows, err := db.Query(query, args...)
 		if err != nil {
@@ -146,13 +124,39 @@ func addFilters(r *http.Request, query string, params []string) (string, []any) 
 
 }
 
+func addSorting(r *http.Request, query string) string {
+	sortParams := r.URL.Query()["sortby"]
+	if len(sortParams) != 0 {
+		for i, params := range sortParams {
+			parts := strings.Split(params, ":")
+			if len(parts) != 2 {
+				continue
+			}
+			field, order := parts[0], parts[1]
+			if !isValidsortOrder(order) || !isValidField(field) {
+				continue
+			}
+
+			query += "ORDER BY "
+
+			if i > 0 {
+				query += " , "
+			}
+
+			query += field + " " + order
+
+		}
+	}
+	return query
+}
+
 func isValidsortOrder(order string) bool {
 	return order == "asc" || order == "desc"
 }
 
 func isValidField(field string) bool {
 	validFields := map[string]bool{
-		"id":true,
+		"id":         true,
 		"first_name": true,
 		"last_name":  true,
 		"class":      true,
