@@ -33,8 +33,7 @@ func main() {
 	rateLimiter := mid.NewRateLimiter(5, time.Second*5)
 
 	whiteList := []string{
-		"sortOrder", 
-		"sortBy", 
+		"sortby", 
 
 		// genral
 		"first_name", 

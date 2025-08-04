@@ -11,7 +11,6 @@ import (
 	"strings"
 )
 
-
 func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	db_name := os.Getenv("DB_NAME")
@@ -30,36 +29,60 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	//handle quary parametre
 	if idstr == "" {
-		
+
 		query := "SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE 1=1 "
 
 		queryParams := []string{
-			"first_name", 
-			"last_name", 
-			"email", 
-			"class", 
+			"first_name",
+			"last_name",
+			"email",
+			"class",
 			"subject",
 		}
-		
-		query, args := addFilters(r, query,queryParams)
 
-		rows, err := db.Query(query,args...)
+		query, args := addFilters(r, query, queryParams)
+
+		sortParams := r.URL.Query()["sortby"]
+
+		if len(sortParams) != 0 {
+			for i, params := range sortParams {
+				parts := strings.Split(params, ":")
+				if len(parts) != 2 {
+					continue
+				}
+				field, order := parts[0], parts[1]
+				if !isValidsortOrder(order) || !isValidField(field) {
+					continue
+				}
+				
+				query += "ORDER BY "
+
+				if i > 0 {
+					query += " , "
+				}
+
+				query += field + " " + order
+
+			}
+		}
+
+		rows, err := db.Query(query, args...)
 		if err != nil {
 			http.Error(w, "error getting rows", http.StatusInternalServerError)
 			return
 		}
 		defer rows.Close()
 
-		teacherList := make([]models.Teacher,0)
+		teacherList := make([]models.Teacher, 0)
 
-		for rows.Next(){
+		for rows.Next() {
 			var teacher models.Teacher
-			err = rows.Scan(&teacher.ID,&teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
+			err = rows.Scan(&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
 			if err != nil {
-				http.Error(w,"error scanning database results", http.StatusInternalServerError)
+				http.Error(w, "error scanning database results", http.StatusInternalServerError)
 				return
 			}
-			teacherList = append(teacherList,teacher)
+			teacherList = append(teacherList, teacher)
 		}
 
 		response := struct {
@@ -88,11 +111,11 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		var teacher models.Teacher
 
 		err = db.QueryRow("SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE id = ?", id).
-		Scan(&teacher.ID,&teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
+			Scan(&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
 		if err == sql.ErrNoRows {
 			http.Error(w, "teacher not found", http.StatusNotFound)
 			return
-		} else if err != nil{
+		} else if err != nil {
 			http.Error(w, "Database error", http.StatusInternalServerError)
 		}
 
@@ -107,19 +130,34 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
 func addFilters(r *http.Request, query string, params []string) (string, []any) {
 
 	var args []any
 
-	for _, value :=  range params{
+	for _, value := range params {
 		result := r.URL.Query().Get(value)
-		if result != ""{
-			query += "AND "+value+ "= ? "
+		if result != "" {
+			query += "AND " + value + "= ? "
 			args = append(args, result)
 		}
 	}
 
 	return query, args
 
+}
+
+func isValidsortOrder(order string) bool {
+	return order == "asc" || order == "desc"
+}
+
+func isValidField(field string) bool {
+	validFields := map[string]bool{
+		"id":true,
+		"first_name": true,
+		"last_name":  true,
+		"class":      true,
+		"email":      true,
+		"subject":    true,
+	}
+	return validFields[field]
 }
