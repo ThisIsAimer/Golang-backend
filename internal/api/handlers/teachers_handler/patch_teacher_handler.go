@@ -3,8 +3,10 @@ package teachers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -73,6 +75,10 @@ func PatchTeachersHandler(w http.ResponseWriter, r *http.Request) {
 			existingTeacher.Subject = v.(string)
 		}
 	}
+
+	//applying updates using reflect
+	teacherVal := reflect.ValueOf(&existingTeacher).Elem()
+	fmt.Println("teacher:", teacherVal.Type())
 
 	_, err = db.Exec("UPDATE teachers SET first_name = ?, last_name = ?, email = ?, class = ?, subject = ? WHERE id = ?",
 		existingTeacher.FirstName, existingTeacher.LastName, existingTeacher.Email, existingTeacher.Class, existingTeacher.Subject, existingTeacher.ID,
