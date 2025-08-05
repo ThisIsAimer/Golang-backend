@@ -3,7 +3,6 @@ package teachers
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"reflect"
@@ -58,27 +57,36 @@ func PatchTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to retrieve data", http.StatusInternalServerError)
 		return
 	}
-	query := "UPDATE teachers SET "
 
-	for k, v := range updates {
-		switch k {
-		case "first_name":
-			existingTeacher.FirstName = v.(string)
-			query += "first_name, "
-		case "last_name":
-			existingTeacher.LastName = v.(string)
-		case "email":
-			existingTeacher.Email = v.(string)
-		case "class":
-			existingTeacher.Class = v.(string)
-		case "subject":
-			existingTeacher.Subject = v.(string)
-		}
-	}
+	// for k, v := range updates {
+	// 	switch k {
+	// 	case "first_name":
+	// 		existingTeacher.FirstName = v.(string)
+	// 	case "last_name":
+	// 		existingTeacher.LastName = v.(string)
+	// 	case "email":
+	// 		existingTeacher.Email = v.(string)
+	// 	case "class":
+	// 		existingTeacher.Class = v.(string)
+	// 	case "subject":
+	// 		existingTeacher.Subject = v.(string)
+	// 	}
+	// }
 
 	//applying updates using reflect
-	teacherVal := reflect.ValueOf(&existingTeacher).Elem()
-	fmt.Println("teacher:", teacherVal.Type())
+	teacherVal := reflect.ValueOf(&existingTeacher).Elem() //the actual field of existingTeacher
+	teacherType := teacherVal.Type() // type of the field(modles.Teacher)
+
+	for k, v := range updates {
+		for i := range teacherVal.NumField(){ 
+			field := teacherType.Field(i) //returns each field of modles.Teacher with respect to i
+			if field.Tag.Get("json") == k + `,omitempty`{
+				if teacherVal.Field(i).CanSet(){
+					teacherVal.Field(i).Set(reflect.ValueOf(v).Convert(teacherVal.Field(i).Type()))
+				}
+			}
+		}
+	}
 
 	_, err = db.Exec("UPDATE teachers SET first_name = ?, last_name = ?, email = ?, class = ?, subject = ? WHERE id = ?",
 		existingTeacher.FirstName, existingTeacher.LastName, existingTeacher.Email, existingTeacher.Class, existingTeacher.Subject, existingTeacher.ID,
