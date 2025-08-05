@@ -101,9 +101,9 @@ func PatchTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	responce := struct {
 		Status         string `json:"status"`
-		OldEntry       models.Teacher
-		UpdatingValues map[string]any
-		UpdatedEntry   models.Teacher
+		OldEntry       models.Teacher `json:"old_entry"`
+		UpdatingValues map[string]any `json:"updated_values"`
+		UpdatedEntry   models.Teacher `json:"updated_entries"`
 	}{
 		Status:         "success",
 		OldEntry:       oldTeacher,
