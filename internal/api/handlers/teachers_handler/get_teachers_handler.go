@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
+func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	db_name := os.Getenv("DB_NAME")
 
