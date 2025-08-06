@@ -22,8 +22,7 @@ func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	path := strings.TrimPrefix(r.URL.Path, "/teachers/")
-	idstr := strings.TrimSuffix(path, "/")
+	idstr := r.PathValue("id")
 
 	w.Header().Set("Content-Type", "application/json")
 

@@ -5,15 +5,13 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	"simpleapi/internal/repositories/sqlconnect"
 )
 
 func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
-	path := strings.TrimPrefix(r.URL.Path, "/teachers/")
-	idstr := strings.TrimSuffix(path, "/")
+	idstr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idstr)
 

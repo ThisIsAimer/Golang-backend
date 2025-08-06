@@ -4,14 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"sync"
 
 	"simpleapi/internal/models"
 	"simpleapi/internal/repositories/sqlconnect"
 )
 
-
-var	mutex    = &sync.Mutex{}
 
 
 func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
