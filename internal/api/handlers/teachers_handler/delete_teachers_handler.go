@@ -9,7 +9,7 @@ import (
 	"simpleapi/internal/repositories/sqlconnect"
 )
 
-func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
+func DeleteTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 	idstr := r.PathValue("id")
 
