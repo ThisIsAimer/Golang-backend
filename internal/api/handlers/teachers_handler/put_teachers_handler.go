@@ -11,7 +11,7 @@ import (
 	"simpleapi/internal/repositories/sqlconnect"
 )
 
-func PutTeachersHandler(w http.ResponseWriter, r *http.Request) {
+func PutTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	idstr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idstr)

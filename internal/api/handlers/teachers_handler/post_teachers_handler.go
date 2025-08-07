@@ -11,7 +11,7 @@ import (
 
 
 
-func PostTeacherHandler(w http.ResponseWriter, r *http.Request) {
+func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	db_name := os.Getenv("DB_NAME")
 
 	db, err := sqlconnect.ConnectDB(db_name)

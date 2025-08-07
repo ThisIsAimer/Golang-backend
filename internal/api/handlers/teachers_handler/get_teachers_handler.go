@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func GetTeacherHandler(w http.ResponseWriter, r *http.Request) {
+func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	db_name := os.Getenv("DB_NAME")
 
 	db, err := sqlconnect.ConnectDB(db_name)
@@ -77,7 +77,7 @@ func GetTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
+func GetTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 	db_name := os.Getenv("DB_NAME")
 
