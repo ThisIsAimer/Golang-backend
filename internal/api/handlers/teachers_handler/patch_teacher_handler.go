@@ -57,13 +57,13 @@ func PatchTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	teacherVal := reflect.ValueOf(&existingTeacher).Elem() //the actual field of existingTeacher
-	teacherType := teacherVal.Type() // type of the field(modles.Teacher)
+	teacherType := teacherVal.Type()                       // type of the field(modles.Teacher)
 
 	for k, v := range updates {
-		for i := range teacherVal.NumField(){ 
+		for i := range teacherVal.NumField() {
 			field := teacherType.Field(i) //returns each field of modles.Teacher with respect to i
-			if field.Tag.Get("json") == k + `,omitempty`{
-				if teacherVal.Field(i).CanSet(){
+			if field.Tag.Get("json") == k+`,omitempty` {
+				if teacherVal.Field(i).CanSet() {
 					teacherVal.Field(i).Set(reflect.ValueOf(v).Convert(teacherVal.Field(i).Type()))
 				}
 			}
@@ -82,7 +82,7 @@ func PatchTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	responce := struct {
-		Status         string `json:"status"`
+		Status         string         `json:"status"`
 		OldEntry       models.Teacher `json:"old_entry"`
 		UpdatingValues map[string]any `json:"updated_values"`
 		UpdatedEntry   models.Teacher `json:"updated_entries"`
@@ -97,8 +97,8 @@ func PatchTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
-func PatchTeachersHandler(w http.ResponseWriter, r *http.Request){
+// used for multi update
+func PatchTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	db_name := os.Getenv("DB_NAME")
 
 	db, err := sqlconnect.ConnectDB(db_name)
@@ -116,17 +116,25 @@ func PatchTeachersHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	tx , err :=db.Begin()
-	if err != nil{
+	tx, err := db.Begin()
+	if err != nil {
 		println("err is")
 		http.Error(w, "error starting transaction", http.StatusInternalServerError)
 	}
 
-	for _, update := range updates{
-		id, ok := update["id"].(int)
+	for _, update := range updates {
+		idStr, ok := update["id"].(string)
 		if !ok {
 			tx.Rollback()
-			http.Error(w,"invalid teacher id", http.StatusBadRequest)
+			http.Error(w, "error converting id to string", http.StatusBadRequest)
+			return
+		}
+
+		id, err := strconv.Atoi(idStr)
+
+		if err != nil {
+			tx.Rollback()
+			http.Error(w, "invalid id", http.StatusBadRequest)
 			return
 		}
 
@@ -145,6 +153,47 @@ func PatchTeachersHandler(w http.ResponseWriter, r *http.Request){
 			return
 		}
 
+		teacherVal := reflect.ValueOf(&existingTeacher).Elem()
+		teacherType := teacherVal.Type()
+
+		for k, v := range update {
+			if k == "id" {
+				continue
+			}
+
+			for i := range teacherVal.NumField() {
+				field := teacherType.Field(i)
+				if field.Tag.Get("json") == k+`,omitempty` {
+					fieldVal := teacherVal.Field(i)
+					if fieldVal.CanSet() {
+						val := reflect.ValueOf(v)
+						if val.Type().ConvertibleTo(field.Type) {
+							fieldVal.Set(val.Convert(field.Type))
+						} else {
+							tx.Rollback()
+							http.Error(w, "cant convert value to value type", http.StatusInternalServerError)
+						}
+					} else {
+						break
+					}
+				}
+			}
+			_, err = tx.Exec("UPDATE teachers SET first_name = ?, last_name = ?, email = ?, class = ?, subject = ? WHERE id = ?",
+				existingTeacher.FirstName, existingTeacher.LastName, existingTeacher.Email, existingTeacher.Class, existingTeacher.Subject, existingTeacher.ID,
+			)
+			if err != nil {
+				http.Error(w, "error updating teacher", http.StatusInternalServerError)
+				return
+			}
+		}
+
 	}
+	err = tx.Commit()
+	if err != nil {
+		http.Error(w, "error commiting transaction to the client", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 
 }
