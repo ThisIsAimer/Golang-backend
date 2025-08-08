@@ -2,12 +2,11 @@ package teachers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
+	"simpleapi/internal/repositories/sql/sqlconnect"
+	teacherdb "simpleapi/internal/repositories/sql/teachersdb"
 	"strconv"
-
-	"simpleapi/internal/repositories/sqlconnect"
 )
 
 func DeleteTeacherHandler(w http.ResponseWriter, r *http.Request) {
@@ -21,28 +20,8 @@ func DeleteTeacherHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db_name := os.Getenv("DB_NAME")
-
-	db, err := sqlconnect.ConnectDB(db_name)
+	err = teacherdb.DeleteTeacherDBHandler(w, id)
 	if err != nil {
-		http.Error(w, "error connecting to server", http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
-	result, err := db.Exec("DELETE FROM teachers WHERE id = ?", id)
-	if err != nil {
-		http.Error(w, "error deleting row", http.StatusInternalServerError)
-		return
-	}
-
-	rowsEffected, err := result.RowsAffected()
-	if err != nil {
-		http.Error(w, "error retrieve delete result", http.StatusInternalServerError)
-		return
-	}
-	if rowsEffected == 0 {
-		http.Error(w, "row not found", http.StatusNotFound)
 		return
 	}
 
@@ -76,55 +55,8 @@ func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tx, err := db.Begin()
-
+	deletedIds, err := teacherdb.DeleteTeachersDBHandler(w, ids)
 	if err != nil {
-		http.Error(w, "error starting transaction", http.StatusInternalServerError)
-		return
-	}
-
-	stmt, err := tx.Prepare("DELETE FROM teachers WHERE id = ?")
-	if err != nil {
-		http.Error(w, "error prapring delete statement", http.StatusInternalServerError)
-		return
-	}
-	defer stmt.Close()
-
-	var deletedIds []int
-
-	for _, value := range ids {
-		id, err := strconv.Atoi(value)
-		if err != nil {
-			http.Error(w, "invalid ID", http.StatusBadRequest)
-			return
-		}
-
-		result, err := stmt.Exec(id)
-		if err != nil {
-			tx.Rollback()
-			http.Error(w, "error executing statement", http.StatusInternalServerError)
-			return
-		}
-
-		deletedRows, err := result.RowsAffected()
-		if err != nil {
-			tx.Rollback()
-			http.Error(w, "error retrieveing delete result", http.StatusInternalServerError)
-			return
-		}
-
-		if deletedRows > 0 {
-			deletedIds = append(deletedIds, id)
-		}
-		if deletedRows == 0 {
-			tx.Rollback()
-			http.Error(w, fmt.Sprintf("%d id doesnt exist", id), http.StatusBadRequest)
-			return
-		}
-	}
-	err = tx.Commit()
-	if err != nil {
-		http.Error(w, "error commiting transaction", http.StatusInternalServerError)
 		return
 	}
 

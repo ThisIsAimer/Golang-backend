@@ -1,4 +1,4 @@
-package teacher_db
+package teacherdb
 
 import (
 	"database/sql"
@@ -111,7 +111,7 @@ func isValidField(field string) bool {
 	return validFields[field]
 }
 
-func GetTeacherDBHandler(w http.ResponseWriter, r *http.Request, id int) (models.Teacher, error) {
+func GetTeacherDBHandler(w http.ResponseWriter, id int) (models.Teacher, error) {
 	var teacher models.Teacher
 
 	db_name := os.Getenv("DB_NAME")

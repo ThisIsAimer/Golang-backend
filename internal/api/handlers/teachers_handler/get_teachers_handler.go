@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"simpleapi/internal/models"
-	"simpleapi/internal/repositories/sql/teachersdb"
+	teacherdb "simpleapi/internal/repositories/sql/teachersdb"
 	"strconv"
 )
 
@@ -12,7 +12,7 @@ func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	teacherList, err := teacher_db.GetTeachersDBHandler(w, r)
+	teacherList, err := teacherdb.GetTeachersDBHandler(w, r)
 	if err != nil {
 		return
 	}
@@ -49,7 +49,7 @@ func GetTeacherHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	teacher, err := teacher_db.GetTeacherDBHandler(w, r, id)
+	teacher, err := teacherdb.GetTeacherDBHandler(w, id)
 
 	err = json.NewEncoder(w).Encode(teacher)
 	if err != nil {
