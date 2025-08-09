@@ -30,6 +30,7 @@ func PatchTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	err = teacherdb.PatchTeacherDBHandler(w, id, updates)
 
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -48,6 +49,7 @@ func PatchTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	err = teacherdb.PatchTeachersDBHandler(w, updates)
 
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

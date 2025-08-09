@@ -14,6 +14,7 @@ func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	teacherList, err := teacherdb.GetTeachersDBHandler(w, r)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -50,6 +51,10 @@ func GetTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	teacher, err := teacherdb.GetTeacherDBHandler(w, id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err = json.NewEncoder(w).Encode(teacher)
 	if err != nil {

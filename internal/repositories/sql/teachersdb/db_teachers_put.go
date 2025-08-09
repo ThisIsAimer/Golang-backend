@@ -6,6 +6,7 @@ import (
 	"os"
 	"simpleapi/internal/models"
 	"simpleapi/internal/repositories/sql/sqlconnect"
+	"simpleapi/pkg/utils"
 )
 
 func PutTeacherDBHandler(w http.ResponseWriter, id int, updatedTeacher models.Teacher) (models.Teacher, models.Teacher, error) {
@@ -15,13 +16,13 @@ func PutTeacherDBHandler(w http.ResponseWriter, id int, updatedTeacher models.Te
 	db, err := sqlconnect.ConnectDB(db_name)
 	if err != nil {
 		http.Error(w, "error connecting to server", http.StatusInternalServerError)
-		return models.Teacher{}, models.Teacher{}, err
+		return models.Teacher{}, models.Teacher{}, utils.ErrorHandler(err, "error connecting to database")
 	}
 	defer db.Close()
 
 	existingTeacher, err := GetExistingTeacher(w, db, id)
 	if err != nil {
-		return models.Teacher{},models.Teacher{}, err
+		return models.Teacher{}, models.Teacher{}, err
 	}
 	updatedTeacher.ID = existingTeacher.ID
 
@@ -30,10 +31,10 @@ func PutTeacherDBHandler(w http.ResponseWriter, id int, updatedTeacher models.Te
 	)
 
 	if err != nil {
-		http.Error(w, "error updating database", http.StatusInternalServerError)
-		return models.Teacher{},models.Teacher{}, err
+		return models.Teacher{}, models.Teacher{}, utils.ErrorHandler(err, "error updating database")
 	}
-	return updatedTeacher, existingTeacher, err
+
+	return updatedTeacher, existingTeacher, nil
 
 }
 
@@ -46,11 +47,9 @@ func GetExistingTeacher(w http.ResponseWriter, db *sql.DB, id int) (models.Teach
 		)
 
 	if err == sql.ErrNoRows {
-		http.Error(w, "No rows found with the ID", http.StatusNotFound)
-		return models.Teacher{}, err
+		return models.Teacher{}, utils.ErrorHandler(err, "rows not found")
 	} else if err != nil {
-		http.Error(w, "Unable to retrieve data", http.StatusInternalServerError)
-		return models.Teacher{}, err
+		return models.Teacher{}, utils.ErrorHandler(err, "unable to retrieve data")
 	}
 	return existingTeacher, nil
 }

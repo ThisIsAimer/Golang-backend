@@ -6,6 +6,7 @@ import (
 	"os"
 	"simpleapi/internal/models"
 	"simpleapi/internal/repositories/sql/sqlconnect"
+	"simpleapi/pkg/utils"
 	"strings"
 )
 
@@ -14,8 +15,7 @@ func GetTeachersDBHandler(w http.ResponseWriter, r *http.Request) ([]models.Teac
 
 	db, err := sqlconnect.ConnectDB(db_name)
 	if err != nil {
-		http.Error(w, "error connecting to server", http.StatusInternalServerError)
-		return nil, err
+		return nil, utils.ErrorHandler(err, "error connecting to server")
 	}
 	defer db.Close()
 	query := "SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE 1=1 "
@@ -34,8 +34,7 @@ func GetTeachersDBHandler(w http.ResponseWriter, r *http.Request) ([]models.Teac
 
 	rows, err := db.Query(query, args...)
 	if err != nil {
-		http.Error(w, "error getting rows", http.StatusInternalServerError)
-		return nil, err
+		return nil, utils.ErrorHandler(err, "error getting rows")
 	}
 	defer rows.Close()
 
@@ -45,8 +44,7 @@ func GetTeachersDBHandler(w http.ResponseWriter, r *http.Request) ([]models.Teac
 		var teacher models.Teacher
 		err = rows.Scan(&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
 		if err != nil {
-			http.Error(w, "error scanning database results", http.StatusInternalServerError)
-			return nil, err
+			return nil, utils.ErrorHandler(err, "error scanning database results")
 		}
 		teacherList = append(teacherList, teacher)
 	}
@@ -118,18 +116,16 @@ func GetTeacherDBHandler(w http.ResponseWriter, id int) (models.Teacher, error) 
 
 	db, err := sqlconnect.ConnectDB(db_name)
 	if err != nil {
-		http.Error(w, "error connecting to server", http.StatusInternalServerError)
-		return teacher, err
+		return models.Teacher{}, utils.ErrorHandler(err, "error connecting to database")
 	}
 	defer db.Close()
 
 	err = db.QueryRow("SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE id = ?", id).
 		Scan(&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
 	if err == sql.ErrNoRows {
-		http.Error(w, "teacher not found", http.StatusNotFound)
-		return teacher, err
+		return models.Teacher{}, utils.ErrorHandler(err, "invalid ID")
 	} else if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
+		return models.Teacher{}, utils.ErrorHandler(err, "database error")
 	}
 
 	return teacher, nil

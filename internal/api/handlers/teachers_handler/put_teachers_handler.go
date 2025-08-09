@@ -28,6 +28,10 @@ func PutTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	updatedTeacher, existingTeacher, err := teacherdb.PutTeacherDBHandler(w, id, updatedTeacher)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 

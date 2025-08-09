@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"simpleapi/internal/models"
 	"simpleapi/internal/repositories/sql/sqlconnect"
+	"simpleapi/pkg/utils"
 	"strconv"
 )
 
@@ -15,8 +16,7 @@ func PatchTeacherDBHandler(w http.ResponseWriter, id int, updates map[string]any
 
 	db, err := sqlconnect.ConnectDB(db_name)
 	if err != nil {
-		http.Error(w, "error connecting to server", http.StatusInternalServerError)
-		return err
+		return utils.ErrorHandler(err, "error connecting to database")
 	}
 	defer db.Close()
 
@@ -28,11 +28,9 @@ func PatchTeacherDBHandler(w http.ResponseWriter, id int, updates map[string]any
 		)
 
 	if err == sql.ErrNoRows {
-		http.Error(w, "No rows found with the ID", http.StatusNotFound)
-		return err
+		return utils.ErrorHandler(err, "no rows found")
 	} else if err != nil {
-		http.Error(w, "Unable to retrieve data", http.StatusInternalServerError)
-		return err
+		return utils.ErrorHandler(err, "Unable to retrieve data")
 	}
 
 	teacherVal := reflect.ValueOf(&existingTeacher).Elem() //the actual field of existingTeacher
@@ -54,8 +52,7 @@ func PatchTeacherDBHandler(w http.ResponseWriter, id int, updates map[string]any
 	)
 
 	if err != nil {
-		http.Error(w, "error updating database", http.StatusInternalServerError)
-		return err
+		return utils.ErrorHandler(err, "error updating database")
 	}
 
 	return nil
@@ -68,31 +65,27 @@ func PatchTeachersDBHandler(w http.ResponseWriter, updates []map[string]any) err
 
 	db, err := sqlconnect.ConnectDB(db_name)
 	if err != nil {
-		http.Error(w, "error connecting to server", http.StatusInternalServerError)
-		return err
+		return utils.ErrorHandler(err, "error connecting to database")
 	}
 	defer db.Close()
 
 	tx, err := db.Begin()
 	if err != nil {
-		http.Error(w, "error starting transaction", http.StatusInternalServerError)
-		return err
+		return utils.ErrorHandler(err, "error starting transaction")
 	}
 
 	for _, update := range updates {
 		idStr, ok := update["id"].(string)
 		if !ok {
 			tx.Rollback()
-			http.Error(w, "error converting id to string", http.StatusBadRequest)
-			return err
+			return utils.ErrorHandler(err, "invalid id")
 		}
 
 		id, err := strconv.Atoi(idStr)
 
 		if err != nil {
 			tx.Rollback()
-			http.Error(w, "invalid id", http.StatusBadRequest)
-			return err
+			return utils.ErrorHandler(err, "invalid ID")
 		}
 
 		var existingTeacher models.Teacher
@@ -102,12 +95,10 @@ func PatchTeachersDBHandler(w http.ResponseWriter, updates []map[string]any) err
 		)
 		if err == sql.ErrNoRows {
 			tx.Rollback()
-			http.Error(w, "No rows found with the ID", http.StatusNotFound)
-			return err
+			return utils.ErrorHandler(err, "no rows found")
 		} else if err != nil {
 			tx.Rollback()
-			http.Error(w, "Unable to retrieve data", http.StatusInternalServerError)
-			return err
+			return utils.ErrorHandler(err, "unable to retrieve data")
 		}
 
 		teacherVal := reflect.ValueOf(&existingTeacher).Elem()
@@ -128,7 +119,7 @@ func PatchTeachersDBHandler(w http.ResponseWriter, updates []map[string]any) err
 							fieldVal.Set(val.Convert(field.Type))
 						} else {
 							tx.Rollback()
-							http.Error(w, "cant convert value to value type", http.StatusInternalServerError)
+							return utils.ErrorHandler(err, "unconvertable type")
 						}
 					} else {
 						break
@@ -139,16 +130,14 @@ func PatchTeachersDBHandler(w http.ResponseWriter, updates []map[string]any) err
 				existingTeacher.FirstName, existingTeacher.LastName, existingTeacher.Email, existingTeacher.Class, existingTeacher.Subject, existingTeacher.ID,
 			)
 			if err != nil {
-				http.Error(w, "error updating teacher", http.StatusInternalServerError)
-				return err
+				return utils.ErrorHandler(err, "error updating database")
 			}
 		}
 
 	}
 	err = tx.Commit()
 	if err != nil {
-		http.Error(w, "error commiting transaction to the client", http.StatusInternalServerError)
-		return err
+		return utils.ErrorHandler(err, "error commiting transaction")
 	}
 
 	return nil

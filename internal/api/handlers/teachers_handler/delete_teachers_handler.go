@@ -22,6 +22,7 @@ func DeleteTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = teacherdb.DeleteTeacherDBHandler(w, id)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -57,6 +58,7 @@ func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	deletedIds, err := teacherdb.DeleteTeachersDBHandler(w, ids)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

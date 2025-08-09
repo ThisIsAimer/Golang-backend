@@ -19,6 +19,7 @@ func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	newTeachers, err = teacherdb.PostTeachersDBHandler(w, newTeachers)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
