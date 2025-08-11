@@ -3,6 +3,7 @@ package teachers
 import (
 	"encoding/json"
 	"net/http"
+	"reflect"
 
 	"simpleapi/internal/models"
 	teacherdb "simpleapi/internal/repositories/sql/teachersdb"
@@ -17,11 +18,9 @@ func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, teacher := range newTeachers{
-		if teacher.FirstName == "" || teacher.LastName == "" || teacher.Email == "" || teacher.Class== "" || teacher.Subject == "" {
-			http.Error(w, "all fields are required", http.StatusBadRequest)
-			return
-		}
+	if fieldIsEmpty(newTeachers) {
+		http.Error(w, "all fields are required", http.StatusBadRequest)
+		return
 	}
 
 	newTeachers, err = teacherdb.PostTeachersDBHandler(w, newTeachers)
@@ -48,4 +47,17 @@ func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 		return
 	}
+}
+
+func fieldIsEmpty(models []models.Teacher) bool {
+	for _, value := range models {
+		element := reflect.ValueOf(value)
+		for i := range element.NumField() {
+			if element.Field(i).Kind() == reflect.String && element.Field(i).String() == "" {
+				return true
+			}
+		}
+	}
+
+	return false
 }
