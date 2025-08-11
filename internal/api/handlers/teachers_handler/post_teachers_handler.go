@@ -17,6 +17,13 @@ func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for _, teacher := range newTeachers{
+		if teacher.FirstName == "" || teacher.LastName == "" || teacher.Email == "" || teacher.Class== "" || teacher.Subject == "" {
+			http.Error(w, "all fields are required", http.StatusBadRequest)
+			return
+		}
+	}
+
 	newTeachers, err = teacherdb.PostTeachersDBHandler(w, newTeachers)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
