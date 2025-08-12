@@ -3,10 +3,8 @@ package teachers
 import (
 	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 	"reflect"
-	"strings"
 
 	"simpleapi/internal/models"
 	teacherdb "simpleapi/internal/repositories/sql/teachersdb"
@@ -14,31 +12,17 @@ import (
 )
 
 func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 
-	// new decoder only reads from reader once
-	bodyBytes, err := io.ReadAll(r.Body)
-
-	if err != nil {
-		http.Error(w, "failed to read request body", http.StatusBadRequest)
-		return
-	}
-
-	var verifyJson []map[string]any
-	err = json.Unmarshal(bodyBytes, &verifyJson)
-	if err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
-		return
-	}
-	if keysInvalid(verifyJson) {
-		myError := utils.ErrorHandler(errors.New("User has included other json fields then needed"),"invalid json keys included").Error()
-		http.Error(w, myError, http.StatusBadRequest)
-		return
-	}
+	decoder := json.NewDecoder(r.Body)
+	// used to discard unknown fields
+	decoder.DisallowUnknownFields()
 
 	var newTeachers []models.Teacher
-	err = json.Unmarshal(bodyBytes, &newTeachers)
+	err := decoder.Decode(&newTeachers)
 	if err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		myError :=  utils.ErrorHandler(err,"invalid request body")
+		http.Error(w, myError.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -86,30 +70,4 @@ func fieldIsEmpty(model any) error {
 	}
 
 	return nil
-}
-
-func keysInvalid(data []map[string]any) bool {
-	for _, teacher := range data {
-		for k := range teacher {
-			if checkValidKey(k) {
-				continue
-			} else {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-func checkValidKey(key string) bool {
-	modelType := reflect.TypeOf(models.Teacher{})
-	validKey := make(map[string]bool)
-
-	for i := range modelType.NumField() {
-		modelTag := strings.TrimSuffix(modelType.Field(i).Tag.Get("json"), ",omitempty")
-
-		validKey[modelTag] = true
-	}
-	return validKey[key]
 }
