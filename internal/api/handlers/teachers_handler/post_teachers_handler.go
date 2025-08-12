@@ -39,9 +39,12 @@ func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if fieldIsEmpty(newTeachers) {
+	for _, teacher := range newTeachers{
+		if fieldIsEmpty(teacher) {
 		http.Error(w, "all fields are required", http.StatusBadRequest)
 		return
+	}
+		
 	}
 
 	newTeachers, err = teacherdb.PostTeachersDBHandler(w, newTeachers)
@@ -70,15 +73,14 @@ func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func fieldIsEmpty(models []models.Teacher) bool {
-	for _, value := range models {
-		element := reflect.ValueOf(value)
-		for i := range element.NumField() {
-			if element.Field(i).Kind() == reflect.String && element.Field(i).String() == "" {
-				return true
-			}
+func fieldIsEmpty(model any) bool {
+	element := reflect.ValueOf(model)
+	for i := range element.NumField() {
+		if element.Field(i).Kind() == reflect.String && element.Field(i).String() == "" {
+			return true
 		}
 	}
+	
 
 	return false
 }
