@@ -66,4 +66,8 @@
 - RENAME TABLE my_table to new_table; | (renames table)
 - DROP TABLE new_table; / DROP DATABASE Test_database; | (deletes table or database)
 
+- -- for relational databasing
+- DROP INDEX IF EXISTS idx_class ON teachers; | (for droping index)
+- CREATE INDEX idx_class ON teachers(class); | (creates a foreign index key for relational database)
+- FOREIGN KEY (class) REFERENCES teachers(class) | (links foreign key to column)
 ```
