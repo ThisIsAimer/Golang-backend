@@ -2,6 +2,7 @@ package teachers
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"reflect"
@@ -9,6 +10,7 @@ import (
 
 	"simpleapi/internal/models"
 	teacherdb "simpleapi/internal/repositories/sql/teachersdb"
+	"simpleapi/pkg/utils"
 )
 
 func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +30,8 @@ func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if keysInvalid(verifyJson) {
-		http.Error(w, "invalid json keys included", http.StatusBadRequest)
+		myError := utils.ErrorHandler(errors.New("User has included other json fields then needed"),"invalid json keys included").Error()
+		http.Error(w, myError, http.StatusBadRequest)
 		return
 	}
 
@@ -39,12 +42,13 @@ func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, teacher := range newTeachers{
-		if fieldIsEmpty(teacher) {
-		http.Error(w, "all fields are required", http.StatusBadRequest)
-		return
-	}
-		
+	for _, teacher := range newTeachers {
+		err = fieldIsEmpty(teacher)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 	}
 
 	newTeachers, err = teacherdb.PostTeachersDBHandler(w, newTeachers)
@@ -73,16 +77,15 @@ func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func fieldIsEmpty(model any) bool {
+func fieldIsEmpty(model any) error {
 	element := reflect.ValueOf(model)
 	for i := range element.NumField() {
 		if element.Field(i).Kind() == reflect.String && element.Field(i).String() == "" {
-			return true
+			return utils.ErrorHandler(errors.New("user has not provided all fields"), "all fields required")
 		}
 	}
-	
 
-	return false
+	return nil
 }
 
 func keysInvalid(data []map[string]any) bool {
