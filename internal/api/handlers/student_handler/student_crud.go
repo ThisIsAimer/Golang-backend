@@ -101,7 +101,49 @@ func PostStudentsHandler(w http.ResponseWriter, r *http.Request) {
 
 // put -----------------------------------------------------------------------------------
 func PutStudentHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "accessed : Students. with: Put")
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "invalid id")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+	var student models.Student
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	err = decoder.Decode(&student)
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "invalid json body")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	entries := getModelTags(models.Student{})
+
+	student, existingStudent, err := studentdb.PutStudentDBHandler(id, student, entries)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Status     string         `json:"status"`
+		OldTeacher models.Student `json:"old_teacher"`
+		NewTeacher models.Student `json:"new_teacher"`
+	}{
+		Status:     "Success",
+		OldTeacher: existingStudent,
+		NewTeacher: student,
+	}
+
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "Failed to encode response")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
 }
 
 // patch ------------------------------------------------------------------------------

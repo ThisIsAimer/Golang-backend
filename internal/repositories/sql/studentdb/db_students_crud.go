@@ -144,3 +144,47 @@ func PostStudentsDBHandler(modleTags []string, entries []models.Student) ([]mode
 
 	return entries, nil
 }
+
+// put-----------------------------------------------------------------------------------
+func PutStudentDBHandler(id int, entry models.Student, params []string) (models.Student, models.Student, error) {
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		return models.Student{}, models.Student{}, utils.ErrorHandler(err, "error connecting to database")
+	}
+	defer db.Close()
+
+	query := "SELECT "
+
+	for _, v := range params {
+		if v == "id" {
+			continue
+		}
+		if query != "SELECT " {
+			query += ", "
+		}
+		query += v
+	}
+	query += " FROM students WHERE id = ?"
+
+	var existingStudent models.Student
+
+	err = db.QueryRow(query, id).
+		Scan(&existingStudent.FirstName, &existingStudent.LastName, &existingStudent.Email, &existingStudent.Class)
+
+	if err != nil {
+		return models.Student{}, models.Student{}, utils.ErrorHandler(err, "error retrieving data from database")
+	}
+
+	_, err = db.Exec("UPDATE students SET first_name = ?, last_name = ?, email = ?, class = ? WHERE id = ?",
+		entry.FirstName, entry.LastName, entry.Email, entry.Class, id,
+	)
+	entry.ID = id
+
+	if err != nil {
+		return models.Student{}, models.Student{}, utils.ErrorHandler(err, "error updating database")
+	}
+
+	return entry, existingStudent, nil
+}
