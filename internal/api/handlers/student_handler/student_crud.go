@@ -11,17 +11,18 @@ import (
 	"simpleapi/pkg/utils"
 )
 
-func GetStudentHandler(w http.ResponseWriter, r *http.Request){
+// get------------------------------------------------------------------------------------------------------
+func GetStudentHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		myErr := utils.ErrorHandler(err,"invalid id")
-		http.Error(w, myErr.Error(),http.StatusBadRequest)
+		myErr := utils.ErrorHandler(err, "invalid id")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
 		return
 	}
 
-	student, err :=  studentdb.GetStudentDBHandler(id)
+	student, err := studentdb.GetStudentDBHandler(id)
 	if err != nil {
-		http.Error(w,err.Error(),http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -34,12 +35,12 @@ func GetStudentHandler(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-func GetStudentsHandler(w http.ResponseWriter, r *http.Request){
+func GetStudentsHandler(w http.ResponseWriter, r *http.Request) {
 	validTags := getModelTags(models.Student{})
 
-	studentList , err := studentdb.GetStudentsDBHandler(r,validTags)
+	studentList, err := studentdb.GetStudentsDBHandler(r, validTags)
 	if err != nil {
-		http.Error(w, err.Error(),http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -57,30 +58,66 @@ func GetStudentsHandler(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(response)
 }
 
-//post ----------------------------------------------------------------------------------
-func PostStudentsHandler(w http.ResponseWriter, r *http.Request){
-	fmt.Fprintln(w, "accessed : Students. with: Post")
+// post ----------------------------------------------------------------------------------------
+func PostStudentsHandler(w http.ResponseWriter, r *http.Request) {
+	var students []models.Student
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	err := decoder.Decode(&students)
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "invalid json body")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	modleTags := getModelTags(models.Student{})
+
+	students, err = studentdb.PostStudentsDBHandler(modleTags, students)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+
+	response := struct {
+		Status string           `json:"status"`
+		Count  int              `json:"count"`
+		Data   []models.Student `json:"data"`
+	}{
+		Status: "Success",
+		Count:  len(students),
+		Data:   students,
+	}
+
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "Failed to encode response")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
 }
 
-//put -----------------------------------------------------------------------------------
-func PutStudentHandler(w http.ResponseWriter, r *http.Request){
+// put -----------------------------------------------------------------------------------
+func PutStudentHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "accessed : Students. with: Put")
 }
 
-//patch ------------------------------------------------------------------------------
-func PatchStudentHandler(w http.ResponseWriter, r *http.Request){
+// patch ------------------------------------------------------------------------------
+func PatchStudentHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "accessed : Students. with: Patch")
 }
 
-func PatchStudentsHandler(w http.ResponseWriter, r *http.Request){
+func PatchStudentsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "accessed : Students. with: Patch")
 }
 
-//delete -----------------------------------------------------------------------------
-func DeleteStudentHandler(w http.ResponseWriter, r *http.Request){
+// delete -----------------------------------------------------------------------------
+func DeleteStudentHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "accessed : Students. with: Delete")
 }
 
-func DeleteStudentsHandler(w http.ResponseWriter, r *http.Request){
+func DeleteStudentsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "accessed : Students. with: Delete")
 }
