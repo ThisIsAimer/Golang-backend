@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"simpleapi/internal/models"
 	"simpleapi/internal/repositories/sql/studentdb"
 	"simpleapi/pkg/utils"
 )
@@ -34,7 +35,26 @@ func GetStudentHandler(w http.ResponseWriter, r *http.Request){
 }
 
 func GetStudentsHandler(w http.ResponseWriter, r *http.Request){
-	fmt.Fprintln(w, "accessed : Students. with: Get")
+	validTags := getModelTags(models.Student{})
+
+	studentList , err := studentdb.GetStudentsDBHandler(r,validTags)
+	if err != nil {
+		http.Error(w, err.Error(),http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Status string           `json:"status"`
+		Count  int              `json:"count"`
+		Data   []models.Student `json:"data"`
+	}{
+		Status: "success",
+		Count:  len(studentList),
+		Data:   studentList,
+	}
+	w.Header().Set("Content-Type", "application/json")
+
+	json.NewEncoder(w).Encode(response)
 }
 
 //post ----------------------------------------------------------------------------------
