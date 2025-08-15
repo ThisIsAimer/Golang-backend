@@ -262,6 +262,7 @@ func PatchTeachersDBHandler(w http.ResponseWriter, updates []map[string]any) err
 				existingTeacher.FirstName, existingTeacher.LastName, existingTeacher.Email, existingTeacher.Class, existingTeacher.Subject, existingTeacher.ID,
 			)
 			if err != nil {
+				tx.Rollback()
 				return utils.ErrorHandler(err, "error updating database")
 			}
 		}

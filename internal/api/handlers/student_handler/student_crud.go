@@ -196,7 +196,14 @@ func PatchStudentsHandler(w http.ResponseWriter, r *http.Request) {
 
 // delete -----------------------------------------------------------------------------
 func DeleteStudentHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "accessed : Students. with: Delete")
+	idstr := r.PathValue("id")
+
+	id, err := strconv.Atoi(idstr)
+
+	if err != nil {
+		http.Error(w, "Invalid teacher id", http.StatusBadRequest)
+		return
+	}
 }
 
 func DeleteStudentsHandler(w http.ResponseWriter, r *http.Request) {
