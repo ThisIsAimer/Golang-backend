@@ -204,6 +204,29 @@ func DeleteStudentHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid teacher id", http.StatusBadRequest)
 		return
 	}
+
+	err = studentdb.DeleteStudentDBHandler(id)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	responce := struct {
+		Status string `json:"status"`
+		Id     int    `json:"id"`
+	}{
+		Status: "teacher successfully deleted",
+		Id:     id,
+	}
+
+	err = json.NewEncoder(w).Encode(responce)
+	
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "error encoding json")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func DeleteStudentsHandler(w http.ResponseWriter, r *http.Request) {
