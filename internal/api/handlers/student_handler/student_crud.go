@@ -148,7 +148,32 @@ func PutStudentHandler(w http.ResponseWriter, r *http.Request) {
 
 // patch ------------------------------------------------------------------------------
 func PatchStudentHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "accessed : Students. with: Patch")
+
+	idstr := r.PathValue("id")
+
+	id, err := strconv.Atoi(idstr)
+
+	if err != nil {
+		http.Error(w, "Invalid teacher id", http.StatusBadRequest)
+		return
+	}
+
+	var updates map[string]any
+
+	err = json.NewDecoder(r.Body).Decode(&updates)
+	if err != nil {
+		http.Error(w, "error parsing json body", http.StatusBadRequest)
+		return
+	}
+
+	err = studentdb.PatchStudentDBHandler(id, updates)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+
 }
 
 func PatchStudentsHandler(w http.ResponseWriter, r *http.Request) {
