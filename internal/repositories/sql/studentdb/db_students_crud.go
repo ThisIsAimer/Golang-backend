@@ -279,8 +279,7 @@ func PatchStudentsDBHandler(argumentsList []map[string]any) error {
 }
 
 // delete--------------------------------------------------------------------------
-
-func DeleteStudentDBHandler(id int) error{
+func DeleteStudentDBHandler(id int) error {
 	db_name := os.Getenv("DB_NAME")
 
 	db, err := sqlconnect.ConnectDB(db_name)
@@ -288,7 +287,7 @@ func DeleteStudentDBHandler(id int) error{
 		return utils.ErrorHandler(err, "error connecting to database")
 	}
 	defer db.Close()
-	
+
 	result, err := db.Exec("DELETE FROM students WHERE id = ?", id)
 	if err != nil {
 		return utils.ErrorHandler(err, "error deleting row")
@@ -300,6 +299,49 @@ func DeleteStudentDBHandler(id int) error{
 	}
 	if rowsEffected == 0 {
 		return utils.ErrorHandler(err, "row now found")
+	}
+
+	return nil
+}
+
+func DeleteStudentsDBHandler(ids []int) error {
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		return utils.ErrorHandler(err, "error connecting to database")
+	}
+	defer db.Close()
+
+	query := "DELETE FROM students WHERE id IN "
+
+	args := "("
+
+	var anyIds []any
+
+	for _, id := range ids {
+		if args != "(" {
+			args += ", "
+		}
+		args += "?"
+		anyIds = append(anyIds, id)
+	}
+	args += ")"
+
+	query += args
+
+	result, err := db.Exec(query, anyIds...)
+
+	if err != nil {
+		return utils.ErrorHandler(err, "error executing statement")
+	}
+
+	deletedRows, err := result.RowsAffected()
+	if err != nil {
+		return utils.ErrorHandler(err, "error retrieveing delete results")
+	}
+	if deletedRows == 0 {
+		return utils.ErrorHandler(err, " one of the ids doesnt exist")
 	}
 
 	return nil
