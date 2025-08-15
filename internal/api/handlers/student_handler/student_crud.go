@@ -177,7 +177,21 @@ func PatchStudentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PatchStudentsHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "accessed : Students. with: Patch")
+	var updates []map[string]any
+
+	err := json.NewDecoder(r.Body).Decode(&updates)
+	if err != nil {
+		http.Error(w, "error parsing json body", http.StatusBadRequest)
+		return
+	}
+	err = studentdb.PatchStudentsDBHandler(updates)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // delete -----------------------------------------------------------------------------
