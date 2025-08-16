@@ -71,6 +71,14 @@ func PostStudentsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for _, student:= range students{
+		err := fieldIsEmpty(student)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	}
+
 	modleTags := getModelTags(models.Student{})
 
 	students, err = studentdb.PostStudentsDBHandler(modleTags, students)
