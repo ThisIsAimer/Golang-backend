@@ -7,6 +7,7 @@ import (
 	"simpleapi/internal/models"
 	"simpleapi/internal/repositories/sql/sqlconnect"
 	"simpleapi/pkg/utils"
+	"strings"
 )
 
 // get-------------------------------------------------------------------------------------------------------
@@ -126,6 +127,11 @@ func PostStudentsDBHandler(modleTags []string, entries []models.Student) ([]mode
 
 	result, err := db.Exec(query, arguments...)
 	if err != nil {
+		errString := "a foreign key constraint fails (`school`.`students`, CONSTRAINT `students_ibfk_1` FOREIGN KEY (`class`) REFERENCES `teachers` (`class`))"
+		if strings.Contains(err.Error(), errString) {
+			myErr := utils.ErrorHandler(err, "class/class-teacher doesnt exist for the provided class")
+			return nil, myErr
+		}
 		myErr := utils.ErrorHandler(err, "error uploading entries")
 		return nil, myErr
 	}
