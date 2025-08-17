@@ -243,7 +243,7 @@ func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	var ids []string
 	err := json.NewDecoder(r.Body).Decode(&ids)
 	if err != nil {
-		myErr :=  utils.ErrorHandler(err,"error decoding ids")
+		myErr := utils.ErrorHandler(err, "error decoding ids")
 		http.Error(w, myErr.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -269,4 +269,32 @@ func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(response)
+}
+
+// students by teacher id
+
+func GetStudentsByTeacherId(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	teacher, students, err := teacherdb.GetStudentsByTeacherIdDB(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Status   string           `json:"status"`
+		Teacher  models.Teacher   `json:"teacher"`
+		Students []models.Student `json:"students"`
+	}{
+		Status: "SUCCESS", 
+		Teacher: teacher, 
+		Students: students,
+	}
+	
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }

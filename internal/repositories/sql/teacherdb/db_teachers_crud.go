@@ -14,6 +14,29 @@ import (
 )
 
 // get-----------------------------------------------------------------------------------------------------
+func GetTeacherDBHandler(w http.ResponseWriter, id int) (models.Teacher, error) {
+	var teacher models.Teacher
+
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		return models.Teacher{}, utils.ErrorHandler(err, "error connecting to database")
+	}
+	defer db.Close()
+
+	err = db.QueryRow("SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE id = ?", id).
+		Scan(&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
+	if err == sql.ErrNoRows {
+		return models.Teacher{}, utils.ErrorHandler(err, "invalid ID")
+	} else if err != nil {
+		return models.Teacher{}, utils.ErrorHandler(err, "database error")
+	}
+
+	return teacher, nil
+
+}
+
 func GetTeachersDBHandler(w http.ResponseWriter, r *http.Request) ([]models.Teacher, error) {
 	db_name := os.Getenv("DB_NAME")
 
@@ -53,29 +76,6 @@ func GetTeachersDBHandler(w http.ResponseWriter, r *http.Request) ([]models.Teac
 		teacherList = append(teacherList, teacher)
 	}
 	return teacherList, nil
-}
-
-func GetTeacherDBHandler(w http.ResponseWriter, id int) (models.Teacher, error) {
-	var teacher models.Teacher
-
-	db_name := os.Getenv("DB_NAME")
-
-	db, err := sqlconnect.ConnectDB(db_name)
-	if err != nil {
-		return models.Teacher{}, utils.ErrorHandler(err, "error connecting to database")
-	}
-	defer db.Close()
-
-	err = db.QueryRow("SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE id = ?", id).
-		Scan(&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
-	if err == sql.ErrNoRows {
-		return models.Teacher{}, utils.ErrorHandler(err, "invalid ID")
-	} else if err != nil {
-		return models.Teacher{}, utils.ErrorHandler(err, "database error")
-	}
-
-	return teacher, nil
-
 }
 
 // post------------------------------------------------------------------------------------------------------------------------------------
@@ -358,4 +358,47 @@ func DeleteTeachersDBHandler(w http.ResponseWriter, ids []string) ([]int, error)
 	}
 
 	return deletedIds, nil
+}
+
+// students assigned to teacher ---------------------------------------------------------
+
+func GetStudentsByTeacherIdDB(id string) (models.Teacher, []models.Student, error) {
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		return models.Teacher{}, nil, utils.ErrorHandler(err, "error connecting to database")
+	}
+	defer db.Close()
+
+	var teacher models.Teacher
+
+	err = db.QueryRow("SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE id = ?", id).
+		Scan(&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
+	if err == sql.ErrNoRows {
+		return models.Teacher{}, nil, utils.ErrorHandler(err, "invalid ID")
+	} else if err != nil {
+		return models.Teacher{}, nil, utils.ErrorHandler(err, "database error")
+	}
+
+	query := "SELECT id, first_name, last_name, email, class FROM students WHERE class = (SELECT class FROM teachers where id = ?)"
+
+	rows, err := db.Query(query, id)
+	if err != nil {
+		return models.Teacher{}, nil, utils.ErrorHandler(err, "error getting rows")
+	}
+	defer rows.Close()
+
+	var students []models.Student
+
+	for rows.Next() {
+		var student models.Student
+		err := rows.Scan(&student.ID, &student.FirstName, &student.LastName, &student.Email, &student.Class)
+		if err != nil {
+			return models.Teacher{}, nil, utils.ErrorHandler(err, "error scanning database results")
+		}
+		students = append(students, student)
+	}
+
+	return teacher, students, nil
 }
