@@ -360,8 +360,7 @@ func DeleteTeachersDBHandler(w http.ResponseWriter, ids []string) ([]int, error)
 	return deletedIds, nil
 }
 
-// students assigned to teacher ---------------------------------------------------------
-
+// students assigned to teacher --------------------------------------------------------------------------------
 func GetStudentsByTeacherIdDB(id string) (models.Teacher, []models.Student, error) {
 	db_name := os.Getenv("DB_NAME")
 
@@ -402,3 +401,27 @@ func GetStudentsByTeacherIdDB(id string) (models.Teacher, []models.Student, erro
 
 	return teacher, students, nil
 }
+
+// students count------------------------------------------------------------------------------------------
+func GetStudentCountByTeacherIdDB(id string) (int, error) {
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		return 0, utils.ErrorHandler(err, "error connecting to database")
+	}
+	defer db.Close()
+
+	//agrigate functions in sql!
+	query := "SELECT COUNT(*) FROM students WHERE class = (SELECT class FROM teachers where id = ?)"
+	var studentCount int
+
+	err = db.QueryRow(query, id).Scan(&studentCount)
+	if err != nil {
+		return 0, utils.ErrorHandler(err, "error getting rows")
+	}
+	
+
+	return studentCount, nil
+}
+

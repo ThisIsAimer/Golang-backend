@@ -283,15 +283,41 @@ func GetStudentsByTeacherId(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := struct {
-		Status   string           `json:"status"`
-		Teacher  models.Teacher   `json:"teacher"`
-		Students []models.Student `json:"students"`
+		Status       string           `json:"status"`
+		Teacher      models.Teacher   `json:"teacher"`
+		StudentCount int              `json:"student_count"`
+		Students     []models.Student `json:"students"`
 	}{
-		Status: "SUCCESS", 
-		Teacher: teacher, 
-		Students: students,
+		Status:       "SUCCESS",
+		Teacher:      teacher,
+		StudentCount: len(students),
+		Students:     students,
 	}
-	
+
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetStudentCountByTeacherId(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	studentCount, err := teacherdb.GetStudentCountByTeacherIdDB(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := struct {
+		Status       string `json:"status"`
+		StudentCount int    `json:"student_count"`
+	}{
+		Status:       "SUCCESS",
+		StudentCount: studentCount,
+	}
+
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
