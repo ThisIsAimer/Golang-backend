@@ -52,6 +52,7 @@ func GetStudentsDBHandler(r *http.Request, params []string) ([]models.Student, e
 	if err != nil {
 		return nil, utils.ErrorHandler(err, "error making query")
 	}
+	defer rows.Close()
 
 	students := make([]models.Student, 0)
 
