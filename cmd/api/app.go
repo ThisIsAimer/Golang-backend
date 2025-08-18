@@ -54,7 +54,7 @@ func main() {
 
 	hppMiddleware := mid.Hpp(*hppSettings)
 
-	router := router.Router()
+	router := router.MainRouter()
 
 	// secureMux := mid.Cors(rateLimiter.Middleware(mid.ResponseTime(mid.SecurityHeaders(mid.CompMiddleware(hppMiddleware(router))))))
 	// secureMux := applyMiddlewares(router,hppMiddleware,mid.CompMiddleware,mid.SecurityHeaders,mid.ResponseTime,rateLimiter.Middleware,mid.Cors)
