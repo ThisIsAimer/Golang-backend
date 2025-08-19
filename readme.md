@@ -70,4 +70,7 @@
 - DROP INDEX IF EXISTS idx_class ON teachers; | (for droping index)
 - CREATE INDEX idx_class ON teachers(class); | (creates a foreign index key for relational database)
 - FOREIGN KEY (class) REFERENCES teachers(class) | (links foreign key to column)
+
+- --For time operations
+- user_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ```
