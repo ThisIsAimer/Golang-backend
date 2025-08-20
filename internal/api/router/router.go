@@ -41,20 +41,20 @@ func Router() *http.ServeMux {
 	
 
 	// execs --------------------------------------------------------------------------------------------
-	mux.HandleFunc("GET /execs", execs.ExecsRoute)
-	mux.HandleFunc("POST /execs", execs.ExecsRoute)
-	mux.HandleFunc("PATCH /execs", execs.ExecsRoute)
-	mux.HandleFunc("DELETE /execs", execs.ExecsRoute)
+	mux.HandleFunc("GET /execs", execs.GetExecsHandler)
+	mux.HandleFunc("POST /execs", execs.GetExecsHandler)
+	mux.HandleFunc("PATCH /execs", execs.GetExecsHandler)
+	mux.HandleFunc("DELETE /execs", execs.GetExecsHandler)
 
-	mux.HandleFunc("GET /execs/{id}", execs.ExecsRoute)
-	mux.HandleFunc("PATCH /execs/{id}", execs.ExecsRoute)
-	mux.HandleFunc("DELETE /execs/{id}", execs.ExecsRoute)
+	mux.HandleFunc("GET /execs/{id}", execs.GetExecHandler)
+	mux.HandleFunc("PATCH /execs/{id}", execs.GetExecsHandler)
+	mux.HandleFunc("DELETE /execs/{id}", execs.GetExecsHandler)
 
-	mux.HandleFunc("POST /execs/login", execs.ExecsRoute)
-	mux.HandleFunc("POST /execs/logout", execs.ExecsRoute)
-	mux.HandleFunc("POST /execs/login/forgotpassword", execs.ExecsRoute)
-	mux.HandleFunc("POST/execs/{id}/updatepassword", execs.ExecsRoute)
-	mux.HandleFunc("POST /execs/login/resetpassword/reset/{resetcode}", execs.ExecsRoute)
+	mux.HandleFunc("POST /execs/login", execs.GetExecsHandler)
+	mux.HandleFunc("POST /execs/logout", execs.GetExecsHandler)
+	mux.HandleFunc("POST /execs/login/forgotpassword", execs.GetExecsHandler)
+	mux.HandleFunc("POST/execs/{id}/updatepassword", execs.GetExecsHandler)
+	mux.HandleFunc("POST /execs/login/resetpassword/reset/{resetcode}", execs.GetExecsHandler)
 
 	
 	return mux
