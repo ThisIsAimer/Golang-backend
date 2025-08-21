@@ -3,7 +3,7 @@ package execs
 import (
 	"encoding/json"
 	"net/http"
-	
+
 	"simpleapi/internal/models"
 	"simpleapi/internal/repositories/sql/execsdb"
 	"simpleapi/pkg/utils"
@@ -54,4 +54,49 @@ func GetExecsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	json.NewEncoder(w).Encode(response)
+}
+
+// Post------------------------------------------------------------------------------------------------
+func PostExecsHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// Patch----------------------------------------------------------------------------------------------
+func PatchExecHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func PatchExecsHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// Delete----------------------------------------------------------------------------------------------
+func DeleteExecHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func DeleteExecsHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// Login----------------------------------------------------------------------------------------------
+func LoginExecHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func LogoutExecHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// Passwords----------------------------------------------------------------------------------------------
+func ForgetPassExecHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func UpdatePassExecHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func ResetPassExecHandler(w http.ResponseWriter, r *http.Request) {
+
 }

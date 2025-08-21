@@ -3,10 +3,10 @@ package router
 import (
 	"net/http"
 
+	execs "simpleapi/internal/api/handlers/execs_handler"
 	home "simpleapi/internal/api/handlers/home_handler"
 	students "simpleapi/internal/api/handlers/student_handler"
 	teachers "simpleapi/internal/api/handlers/teachers_handler"
-	execs "simpleapi/internal/api/handlers/execs_handler"
 )
 
 func Router() *http.ServeMux {
@@ -38,24 +38,22 @@ func Router() *http.ServeMux {
 	mux.HandleFunc("PUT /students/{id}", students.PutStudentHandler)
 	mux.HandleFunc("PATCH /students/{id}", students.PatchStudentHandler)
 	mux.HandleFunc("DELETE /students/{id}", students.DeleteStudentHandler)
-	
 
 	// execs --------------------------------------------------------------------------------------------
 	mux.HandleFunc("GET /execs", execs.GetExecsHandler)
-	mux.HandleFunc("POST /execs", execs.GetExecsHandler)
-	mux.HandleFunc("PATCH /execs", execs.GetExecsHandler)
-	mux.HandleFunc("DELETE /execs", execs.GetExecsHandler)
+	mux.HandleFunc("POST /execs", execs.PostExecsHandler)
+	mux.HandleFunc("PATCH /execs", execs.PatchExecsHandler)
+	mux.HandleFunc("DELETE /execs", execs.DeleteExecsHandler)
 
 	mux.HandleFunc("GET /execs/{id}", execs.GetExecHandler)
-	mux.HandleFunc("PATCH /execs/{id}", execs.GetExecsHandler)
-	mux.HandleFunc("DELETE /execs/{id}", execs.GetExecsHandler)
+	mux.HandleFunc("PATCH /execs/{id}", execs.PatchExecHandler)
+	mux.HandleFunc("DELETE /execs/{id}", execs.DeleteExecHandler)
 
-	mux.HandleFunc("POST /execs/login", execs.GetExecsHandler)
-	mux.HandleFunc("POST /execs/logout", execs.GetExecsHandler)
-	mux.HandleFunc("POST /execs/login/forgotpassword", execs.GetExecsHandler)
-	mux.HandleFunc("POST/execs/{id}/updatepassword", execs.GetExecsHandler)
-	mux.HandleFunc("POST /execs/login/resetpassword/reset/{resetcode}", execs.GetExecsHandler)
+	mux.HandleFunc("POST /execs/login", execs.LoginExecHandler)
+	mux.HandleFunc("POST /execs/logout", execs.LogoutExecHandler)
+	mux.HandleFunc("POST /execs/login/forgotpassword", execs.ForgetPassExecHandler)
+	mux.HandleFunc("POST/execs/{id}/updatepassword", execs.UpdatePassExecHandler)
+	mux.HandleFunc("POST /execs/login/resetpassword/reset/{resetcode}", execs.ResetPassExecHandler)
 
-	
 	return mux
 }
