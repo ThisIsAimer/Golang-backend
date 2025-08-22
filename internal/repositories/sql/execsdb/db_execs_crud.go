@@ -21,8 +21,8 @@ func GetExecDBHandler(id int) (models.Execs, error) {
 	var executive models.Execs
 	executive.ID = id
 
-	err = db.QueryRow("SELECT first_name, last_name, email, class FROM execs WHERE id = ?", id).
-		Scan(&executive.FirstName, &executive.LastName, &executive.Email)
+	err = db.QueryRow("SELECT first_name, last_name, email, user_name, user_created_at, inactive_status class FROM execs WHERE id = ?", id).
+		Scan(&executive.FirstName, &executive.LastName, &executive.Email, &executive.UserName, &executive.UserCreatedAt, &executive.InactiveStatus)
 	if err != nil {
 		return models.Execs{}, utils.ErrorHandler(err, "error retrieving data from database")
 	}
@@ -40,7 +40,7 @@ func GetExecsDBHandler(r *http.Request, params []string) ([]models.Execs, error)
 	}
 	defer db.Close()
 
-	query := `SELECT id, first_name, last_name, email, class FROM execs WHERE 1 = 1 `
+	query := `SELECT id, first_name, last_name, email, user_name, user_created_at, inactive_status class FROM execs WHERE 1=1 `
 
 	query, args := addFilters(r, query, params)
 
@@ -56,7 +56,7 @@ func GetExecsDBHandler(r *http.Request, params []string) ([]models.Execs, error)
 
 	for rows.Next() {
 		var exec models.Execs
-		err = rows.Scan(&exec.ID, &exec.FirstName, &exec.LastName, &exec.Email)
+		err = rows.Scan(&exec.ID, &exec.FirstName, &exec.LastName, &exec.Email, &exec.UserName, &exec.UserCreatedAt, &exec.InactiveStatus)
 		if err != nil {
 			return nil, utils.ErrorHandler(err, "error scanning database results")
 		}
