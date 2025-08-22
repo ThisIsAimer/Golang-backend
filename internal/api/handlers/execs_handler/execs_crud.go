@@ -58,6 +58,43 @@ func GetExecsHandler(w http.ResponseWriter, r *http.Request) {
 
 // Post------------------------------------------------------------------------------------------------
 func PostExecsHandler(w http.ResponseWriter, r *http.Request) {
+	var execs []models.Execs
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	err := decoder.Decode(&execs)
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "invalid json body")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	execTags := getModelTags(models.Execs{})
+
+	execs, err = execsdb.PostExecsDBHandler(execTags, execs)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+
+	response := struct {
+		Status string         `json:"status"`
+		Count  int            `json:"count"`
+		Data   []models.Execs `json:"data"`
+	}{
+		Status: "Success",
+		Count:  len(execs),
+		Data:   execs,
+	}
+
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "Failed to encode response")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
 
 }
 
