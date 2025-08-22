@@ -14,7 +14,7 @@ type Execs struct {
 	// sql.NullStrings will automatically updated by the database so we dont need to populate it
 	// it can be null or a string
 	UserCreatedAt     sql.NullString `json:"user_created_at,omitempty" db:"user_created_at,omitempty"`
-	PasswordChangedAt sql.NullString `json:"pass_changed_at,omitempty" db:"pass_changed_at,omitempty"`
+	PasswordChangedAt sql.NullString `json:"password_changed_at,omitempty" db:"password_changed_at,omitempty"`
 	PassResetCode     sql.NullString `json:"pass_reset_code,omitempty" db:"pass_reset_code,omitempty"`
 	PassCodeExpires   sql.NullString `json:"pass_code_expires,omitempty" db:"pass_code_expires,omitempty"`
 
