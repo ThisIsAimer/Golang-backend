@@ -145,3 +145,41 @@ func PostExecsDBHandler(modleTags []string, entries []models.Execs) ([]models.Ex
 
 	return entries, nil
 }
+
+// patch-------------------------------------------------------------------------------------------
+func PatchExecDBHandler(id int, arguments map[string]any) error {
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		return utils.ErrorHandler(err, "error connecting to database")
+	}
+	defer db.Close()
+
+	query := "UPDATE execs SET "
+
+	flags := ""
+	var args []any
+
+	for k, v := range arguments {
+		if flags != "" {
+			flags += ", "
+		}
+		flags += k + " = ?"
+
+		args = append(args, v)
+
+	}
+	args = append(args, id)
+
+	query += flags + " WHERE id = ?"
+
+	_, err = db.Exec(query, args...)
+
+	if err != nil {
+		return utils.ErrorHandler(err, "error updating database")
+	}
+
+	return nil
+
+}

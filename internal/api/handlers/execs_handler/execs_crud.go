@@ -43,8 +43,8 @@ func GetExecsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := struct {
-		Status string         `json:"status"`
-		Count  int            `json:"count"`
+		Status string              `json:"status"`
+		Count  int                 `json:"count"`
 		Data   []models.BasicExecs `json:"data"`
 	}{
 		Status: "success",
@@ -100,6 +100,30 @@ func PostExecsHandler(w http.ResponseWriter, r *http.Request) {
 
 // Patch----------------------------------------------------------------------------------------------
 func PatchExecHandler(w http.ResponseWriter, r *http.Request) {
+	idstr := r.PathValue("id")
+
+	id, err := strconv.Atoi(idstr)
+
+	if err != nil {
+		http.Error(w, "Invalid teacher id", http.StatusBadRequest)
+		return
+	}
+
+	var updates map[string]any
+
+	err = json.NewDecoder(r.Body).Decode(&updates)
+	if err != nil {
+		http.Error(w, "error parsing json body", http.StatusBadRequest)
+		return
+	}
+
+	err = execsdb.PatchExecDBHandler(id, updates)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 
 }
 
