@@ -20,3 +20,16 @@ type Execs struct {
 
 	InactiveStatus bool `json:"inactive_status,omitempty" db:"inactive_status,omitempty"`
 }
+
+// for normal use
+type BasicExecs struct {
+	ID             int    `json:"id,omitempty" db:"id,omitempty"`
+	UserName       string `json:"user_name,omitempty" db:"user_name,omitempty"`
+	Password       string `json:"password,omitempty" db:"password,omitempty"`
+	FirstName      string `json:"first_name,omitempty" db:"first_name,omitempty"`
+	LastName       string `json:"last_name,omitempty" db:"last_name,omitempty"`
+	Email          string `json:"email,omitempty" db:"email,omitempty"`
+	UserCreatedAt  string `json:"user_created_at,omitempty" db:"user_created_at,omitempty"`
+	Role           string `json:"role,omitempty" db:"role,omitempty"`
+	InactiveStatus bool   `json:"inactive_status,omitempty" db:"inactive_status,omitempty"`
+}

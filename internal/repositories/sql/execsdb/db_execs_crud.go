@@ -10,29 +10,29 @@ import (
 	"simpleapi/pkg/utils"
 )
 
-func GetExecDBHandler(id int) (models.Execs, error) {
+func GetExecDBHandler(id int) (models.BasicExecs, error) {
 	db_name := os.Getenv("DB_NAME")
 
 	db, err := sqlconnect.ConnectDB(db_name)
 	if err != nil {
-		return models.Execs{}, utils.ErrorHandler(err, "error connecting to database")
+		return models.BasicExecs{}, utils.ErrorHandler(err, "error connecting to database")
 	}
 	defer db.Close()
 
-	var executive models.Execs
+	var executive models.BasicExecs
 	executive.ID = id
 
 	err = db.QueryRow("SELECT first_name, last_name, email, user_name, user_created_at, role, inactive_status class FROM execs WHERE id = ?", id).
 		Scan(&executive.FirstName, &executive.LastName, &executive.Email, &executive.UserName, &executive.UserCreatedAt, &executive.Role, &executive.InactiveStatus)
 	if err != nil {
-		return models.Execs{}, utils.ErrorHandler(err, "error retrieving data from database")
+		return models.BasicExecs{}, utils.ErrorHandler(err, "error retrieving data from database")
 	}
 
 	return executive, nil
 
 }
 
-func GetExecsDBHandler(r *http.Request, params []string) ([]models.Execs, error) {
+func GetExecsDBHandler(r *http.Request, params []string) ([]models.BasicExecs, error) {
 	db_name := os.Getenv("DB_NAME")
 
 	db, err := sqlconnect.ConnectDB(db_name)
@@ -53,10 +53,10 @@ func GetExecsDBHandler(r *http.Request, params []string) ([]models.Execs, error)
 	}
 	defer rows.Close()
 
-	execs := make([]models.Execs, 0)
+	execs := make([]models.BasicExecs, 0)
 
 	for rows.Next() {
-		var exec models.Execs
+		var exec models.BasicExecs
 		err = rows.Scan(&exec.ID, &exec.FirstName, &exec.LastName, &exec.Email, &exec.UserName, &exec.UserCreatedAt, &exec.Role, &exec.InactiveStatus)
 		if err != nil {
 			return nil, utils.ErrorHandler(err, "error scanning database results")

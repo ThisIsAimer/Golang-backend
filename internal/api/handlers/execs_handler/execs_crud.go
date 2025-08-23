@@ -45,7 +45,7 @@ func GetExecsHandler(w http.ResponseWriter, r *http.Request) {
 	response := struct {
 		Status string         `json:"status"`
 		Count  int            `json:"count"`
-		Data   []models.Execs `json:"data"`
+		Data   []models.BasicExecs `json:"data"`
 	}{
 		Status: "success",
 		Count:  len(execsList),
