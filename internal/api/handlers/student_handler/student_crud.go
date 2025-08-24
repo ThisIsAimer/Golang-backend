@@ -137,12 +137,12 @@ func PutStudentHandler(w http.ResponseWriter, r *http.Request) {
 
 	response := struct {
 		Status     string         `json:"status"`
-		OldTeacher models.Student `json:"old_teacher"`
-		NewTeacher models.Student `json:"new_teacher"`
+		Oldstudent models.Student `json:"old_student"`
+		Newstudent models.Student `json:"new_student"`
 	}{
 		Status:     "Success",
-		OldTeacher: existingStudent,
-		NewTeacher: student,
+		Oldstudent: existingStudent,
+		Newstudent: student,
 	}
 
 	err = json.NewEncoder(w).Encode(response)
@@ -162,7 +162,7 @@ func PatchStudentHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idstr)
 
 	if err != nil {
-		http.Error(w, "Invalid teacher id", http.StatusBadRequest)
+		http.Error(w, "Invalid student id", http.StatusBadRequest)
 		return
 	}
 
@@ -209,7 +209,7 @@ func DeleteStudentHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idstr)
 
 	if err != nil {
-		http.Error(w, "Invalid teacher id", http.StatusBadRequest)
+		http.Error(w, "Invalid student id", http.StatusBadRequest)
 		return
 	}
 
