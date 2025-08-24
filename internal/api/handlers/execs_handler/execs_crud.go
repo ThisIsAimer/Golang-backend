@@ -2,6 +2,7 @@ package execs
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"simpleapi/internal/models"
@@ -145,7 +146,6 @@ func PatchExecsHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 
-
 }
 
 // Delete----------------------------------------------------------------------------------------------
@@ -184,6 +184,59 @@ func DeleteExecHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteExecsHandler(w http.ResponseWriter, r *http.Request) {
+	var ids []any
+	var intIds []int
+
+	err := json.NewDecoder(r.Body).Decode(&ids)
+	if err != nil {
+		http.Error(w, "error parsing json body", http.StatusBadRequest)
+		return
+	}
+
+	for _, id := range ids {
+		switch v := id.(type) {
+		case float64:
+			intIds = append(intIds, int(v))
+		case int:
+			intIds = append(intIds, v)
+		case string:
+			convID, err := strconv.Atoi(v)
+
+			if err != nil {
+				myErr := utils.ErrorHandler(err, "invalid id")
+				http.Error(w, myErr.Error(), http.StatusBadRequest)
+				return
+			}
+
+			intIds = append(intIds, convID)
+		default:
+			myErr := utils.ErrorHandler(fmt.Errorf("default type activated"), "invalid id")
+			http.Error(w, myErr.Error(), http.StatusBadRequest)
+			return
+
+		}
+	}
+	err = execsdb.DeleteExecsDBHandler(intIds)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	responce := struct {
+		Status string `json:"status"`
+		Ids    []int  `json:"ids"`
+	}{
+		Status: "students successfully deleted",
+		Ids:    intIds,
+	}
+
+	err = json.NewEncoder(w).Encode(responce)
+
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "error encoding json")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
 
 }
 
