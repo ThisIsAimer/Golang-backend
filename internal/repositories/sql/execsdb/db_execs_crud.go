@@ -96,6 +96,7 @@ func PostExecsDBHandler(modleTags []string, entries []models.Execs) ([]models.Ex
 	var arguments []any
 
 	for _, student := range entries {
+
 		if givenValues != "" {
 			givenValues += ", "
 		}
@@ -111,6 +112,12 @@ func PostExecsDBHandler(modleTags []string, entries []models.Execs) ([]models.Ex
 		}
 		startBracket += ")"
 		givenValues += startBracket
+
+		// password hashing
+		student.Password, err = passEncoder(student.Password)
+		if err != nil {
+			return nil, err
+		}
 
 		execsValue := reflect.ValueOf(&student).Elem()
 		studentType := execsValue.Type()
@@ -167,6 +174,13 @@ func PatchExecDBHandler(id int, arguments map[string]any) error {
 		}
 		flags += k + " = ?"
 
+		if k == "password" {
+			v, err = passEncoder(v.(string))
+			if err != nil {
+				return err
+			}
+		}
+
 		args = append(args, v)
 
 	}
@@ -214,6 +228,13 @@ func PatchExecsDBHandler(argumentsList []map[string]any) error {
 				flags += ", "
 			}
 			flags += k + " = ?"
+
+			if k == "password" {
+				v, err = passEncoder(v.(string))
+				if err != nil {
+					return err
+				}
+			}
 
 			args = append(args, v)
 

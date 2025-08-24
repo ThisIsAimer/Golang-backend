@@ -1,8 +1,14 @@
 package execsdb
 
 import (
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
 	"net/http"
+	"simpleapi/pkg/utils"
 	"strings"
+
+	"golang.org/x/crypto/argon2"
 )
 
 func addFilters(r *http.Request, query string, params []string) (string, []any) {
@@ -59,4 +65,24 @@ func isValidField(validfields []string, field string) bool {
 	}
 
 	return boolFields[field]
+}
+
+func passEncoder(password string) (string, error) {
+	if password == "" {
+		return "", utils.ErrorHandler(fmt.Errorf("password is empty"), "password is required")
+	}
+
+	salt := make([]byte, 16)
+
+	_, err := rand.Read(salt)
+	if err != nil {
+		return "", utils.ErrorHandler(err, "error adding data")
+	}
+	hash := argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32)
+	saltBase64 := base64.StdEncoding.EncodeToString(salt)
+	hashBase64 := base64.StdEncoding.EncodeToString(hash)
+
+	encodedHash := saltBase64 + "." + hashBase64
+
+	return encodedHash, nil
 }
