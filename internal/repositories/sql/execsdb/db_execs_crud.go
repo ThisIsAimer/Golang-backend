@@ -183,3 +183,53 @@ func PatchExecDBHandler(id int, arguments map[string]any) error {
 	return nil
 
 }
+
+func PatchExecsDBHandler(argumentsList []map[string]any) error {
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		return utils.ErrorHandler(err, "error connecting to database")
+	}
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		return utils.ErrorHandler(err, "error starting transaction")
+	}
+
+	for _, arguments := range argumentsList {
+		query := "UPDATE execs SET "
+
+		flags := ""
+		var args []any
+		var id any
+
+		for k, v := range arguments {
+			if k == "id" {
+				id = v
+				continue
+			}
+			if flags != "" {
+				flags += ", "
+			}
+			flags += k + " = ?"
+
+			args = append(args, v)
+
+		}
+		args = append(args, id)
+
+		query += flags + " WHERE id = ?"
+
+		_, err = tx.Exec(query, args...)
+
+		if err != nil {
+			return utils.ErrorHandler(err, "error updating database")
+		}
+
+	}
+	tx.Commit()
+
+	return nil
+}

@@ -128,6 +128,23 @@ func PatchExecHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PatchExecsHandler(w http.ResponseWriter, r *http.Request) {
+	var updates []map[string]any
+
+	err := json.NewDecoder(r.Body).Decode(&updates)
+	if err != nil {
+		http.Error(w, "error parsing json body", http.StatusBadRequest)
+		return
+	}
+
+	err = execsdb.PatchExecsDBHandler(updates)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+
 
 }
 
