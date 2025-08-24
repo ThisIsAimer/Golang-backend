@@ -150,6 +150,36 @@ func PatchExecsHandler(w http.ResponseWriter, r *http.Request) {
 
 // Delete----------------------------------------------------------------------------------------------
 func DeleteExecHandler(w http.ResponseWriter, r *http.Request) {
+	idstr := r.PathValue("id")
+
+	id, err := strconv.Atoi(idstr)
+
+	if err != nil {
+		http.Error(w, "Invalid exec id", http.StatusBadRequest)
+		return
+	}
+
+	err = execsdb.DeleteExecDBHandler(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	responce := struct {
+		Status string `json:"status"`
+		Id     int    `json:"id"`
+	}{
+		Status: "exec successfully deleted",
+		Id:     id,
+	}
+
+	err = json.NewEncoder(w).Encode(responce)
+
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "error encoding json")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
 
 }
 
