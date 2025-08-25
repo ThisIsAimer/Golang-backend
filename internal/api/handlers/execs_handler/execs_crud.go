@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"simpleapi/internal/models"
 	"simpleapi/internal/repositories/sql/execsdb"
@@ -265,30 +266,30 @@ func LoginExecHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	givenPass := req.Password 
+	givenPass := req.Password
 
 	// search if user exists
 	req, err = execsdb.LoginExecDBHandler(req.UserName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return 
+		return
 	}
 
 	// is user active
-	if req.InactiveStatus{
-		myErr := utils.ErrorHandler(fmt.Errorf("user inactive"),"user is inactive")
+	if req.InactiveStatus {
+		myErr := utils.ErrorHandler(fmt.Errorf("user inactive"), "user is inactive")
 		http.Error(w, myErr.Error(), http.StatusForbidden)
-		return 
+		return
 	}
 
 	// verify password
 	parts := strings.Split(req.Password, ".")
 	if len(parts) != 2 {
-		myErr := utils.ErrorHandler(fmt.Errorf("invalid encode hash format"),"Password must be reset")
+		myErr := utils.ErrorHandler(fmt.Errorf("invalid encode hash format"), "Password must be reset")
 		http.Error(w, myErr.Error(), http.StatusInternalServerError)
 	}
 
-	saltBase64 :=  parts[0]
+	saltBase64 := parts[0]
 
 	salt, err := base64.StdEncoding.DecodeString(saltBase64)
 	if err != nil {
@@ -297,17 +298,35 @@ func LoginExecHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	givenPass, err = passEncoder(givenPass,salt)
+	givenPass, err = passEncoder(givenPass, salt)
 
-	if givenPass !=  req.Password{
-		myErr := utils.ErrorHandler(fmt.Errorf("password doesnt match"), "invalid password")
+	if givenPass != req.Password {
+		myErr := utils.ErrorHandler(fmt.Errorf("password doesnt match"), "incorrect password")
 		http.Error(w, myErr.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// generate token
+	tokenString := "abc"
 
 	// send token as response or a cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "Bearer",
+		Value:    tokenString,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Now().Add(time.Hour * 24),
+	})
+	
+	http.SetCookie(w, &http.Cookie{
+		Name:     "test",
+		Value:    "test",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Now().Add(time.Hour * 24),
+	})
 
 }
 
