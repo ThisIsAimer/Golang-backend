@@ -1,6 +1,7 @@
 package execsdb
 
 import (
+	"crypto/rand"
 	"database/sql"
 	"net/http"
 	"os"
@@ -115,7 +116,14 @@ func PostExecsDBHandler(modleTags []string, entries []models.Execs) ([]models.Ex
 		givenValues += startBracket
 
 		// password hashing
-		student.Password, err = passEncoder(student.Password)
+		salt := make([]byte, 16)
+
+		_, err := rand.Read(salt)
+		if err != nil {
+			return nil, utils.ErrorHandler(err, "error adding data")
+		}
+
+		student.Password, err = passEncoder(student.Password, salt)
 		if err != nil {
 			return nil, err
 		}
@@ -176,7 +184,16 @@ func PatchExecDBHandler(id int, arguments map[string]any) error {
 		flags += k + " = ?"
 
 		if k == "password" {
-			v, err = passEncoder(v.(string))
+
+			// hashing pass
+			salt := make([]byte, 16)
+
+			_, err := rand.Read(salt)
+			if err != nil {
+				return utils.ErrorHandler(err, "error adding data")
+			}
+
+			v, err = passEncoder(v.(string), salt)
 			if err != nil {
 				return err
 			}
@@ -231,7 +248,14 @@ func PatchExecsDBHandler(argumentsList []map[string]any) error {
 			flags += k + " = ?"
 
 			if k == "password" {
-				v, err = passEncoder(v.(string))
+				// hashing pass
+				salt := make([]byte, 16)
+
+				_, err := rand.Read(salt)
+				if err != nil {
+					return utils.ErrorHandler(err, "error adding data")
+				}
+				v, err = passEncoder(v.(string), salt)
 				if err != nil {
 					return err
 				}

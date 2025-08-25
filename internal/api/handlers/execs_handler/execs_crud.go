@@ -1,9 +1,11 @@
 package execs
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"simpleapi/internal/models"
 	"simpleapi/internal/repositories/sql/execsdb"
@@ -263,18 +265,45 @@ func LoginExecHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	givenPass := req.Password 
+
 	// search if user exists
 	req, err = execsdb.LoginExecDBHandler(req.UserName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return 
 	}
-	
-	fmt.Println("req", req)
 
 	// is user active
+	if req.InactiveStatus{
+		myErr := utils.ErrorHandler(fmt.Errorf("user inactive"),"user is inactive")
+		http.Error(w, myErr.Error(), http.StatusForbidden)
+		return 
+	}
 
 	// verify password
+	parts := strings.Split(req.Password, ".")
+	if len(parts) != 2 {
+		myErr := utils.ErrorHandler(fmt.Errorf("invalid encode hash format"),"Password must be reset")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+	}
+
+	saltBase64 :=  parts[0]
+
+	salt, err := base64.StdEncoding.DecodeString(saltBase64)
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "error decoding salt")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	givenPass, err = passEncoder(givenPass,salt)
+
+	if givenPass !=  req.Password{
+		myErr := utils.ErrorHandler(fmt.Errorf("password doesnt match"), "invalid password")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// generate token
 
