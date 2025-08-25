@@ -244,8 +244,33 @@ func DeleteExecsHandler(w http.ResponseWriter, r *http.Request) {
 func LoginExecHandler(w http.ResponseWriter, r *http.Request) {
 
 	// data validatiuon
+	var req models.Execs
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	defer r.Body.Close()
+
+	err := decoder.Decode(&req)
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "invalid json body")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if req.UserName == "" || req.Password == "" {
+		myErr := utils.ErrorHandler(err, "username and password are required")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
 
 	// search if user exists
+	req, err = execsdb.LoginExecDBHandler(req.UserName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return 
+	}
+	
+	fmt.Println("req", req)
 
 	// is user active
 

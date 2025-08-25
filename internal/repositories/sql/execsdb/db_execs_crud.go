@@ -1,6 +1,7 @@
 package execsdb
 
 import (
+	"database/sql"
 	"net/http"
 	"os"
 	"reflect"
@@ -322,4 +323,29 @@ func DeleteExecsDBHandler(ids []int) error {
 	}
 
 	return nil
+}
+
+// Login-------------------------------------------------------------------------------------------------------
+
+func LoginExecDBHandler(username string) (models.Execs, error) {
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		return models.Execs{}, utils.ErrorHandler(err, "error connecting to database")
+	}
+	defer db.Close()
+
+	var user models.Execs
+
+	err = db.QueryRow("SELECT id, user_name, password, first_name, last_name, email, user_created_at, role, inactive_status class FROM execs WHERE user_name = ?", username).
+		Scan(&user.ID, &user.UserName, &user.Password, &user.FirstName, &user.LastName, &user.Email, &user.UserCreatedAt, &user.Role, &user.InactiveStatus)
+
+	if err == sql.ErrNoRows {
+		return models.Execs{}, utils.ErrorHandler(err, "invalid username")
+	} else if err != nil {
+		return models.Execs{}, utils.ErrorHandler(err, "error getting data")
+	}
+
+	return user, nil
 }
