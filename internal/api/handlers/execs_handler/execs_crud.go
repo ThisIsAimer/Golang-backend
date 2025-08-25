@@ -243,6 +243,18 @@ func DeleteExecsHandler(w http.ResponseWriter, r *http.Request) {
 // Login----------------------------------------------------------------------------------------------
 func LoginExecHandler(w http.ResponseWriter, r *http.Request) {
 
+	// data validatiuon
+
+	// search if user exists
+
+	// is user active
+
+	// verify password
+
+	// generate token
+
+	// send token as response or a cookie
+
 }
 
 func LogoutExecHandler(w http.ResponseWriter, r *http.Request) {
