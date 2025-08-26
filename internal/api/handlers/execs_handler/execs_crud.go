@@ -307,7 +307,11 @@ func LoginExecHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// generate token
-	tokenString := "abc"
+	tokenString, err := utils.SignToken(req.ID, req.UserName, req.Role)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// send token as response or a cookie
 	http.SetCookie(w, &http.Cookie{
@@ -318,7 +322,7 @@ func LoginExecHandler(w http.ResponseWriter, r *http.Request) {
 		Secure:   true,
 		Expires:  time.Now().Add(time.Hour * 24),
 	})
-	
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "test",
 		Value:    "test",
@@ -327,6 +331,20 @@ func LoginExecHandler(w http.ResponseWriter, r *http.Request) {
 		Secure:   true,
 		Expires:  time.Now().Add(time.Hour * 24),
 	})
+
+	responce := struct {
+		Token string `json:"token"`
+	}{
+		Token: tokenString,
+	}
+
+	err = json.NewEncoder(w).Encode(responce)
+
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "error encoding json")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
 
 }
 
