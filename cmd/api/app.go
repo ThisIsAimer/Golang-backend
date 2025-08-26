@@ -17,7 +17,7 @@ func main() {
 	// used for loading .env variables to environment variables list
 	err := godotenv.Load(`cmd\api\.env`)
 	if err != nil {
-		fmt.Println("error loading .env", err)
+		utils.ErrorHandler(fmt.Errorf("error getting env files"), "error starting server")
 		return 
 	}
 
@@ -70,7 +70,7 @@ func main() {
 
 	err = server.ListenAndServeTLS(cert, key)
 	if err != nil {
-		fmt.Println("error is:", err)
+		utils.ErrorHandler(fmt.Errorf("tls error"), "error starting server")
 		return
 	}
 
