@@ -1,11 +1,9 @@
 package execs
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"simpleapi/internal/models"
@@ -283,26 +281,10 @@ func LoginExecHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// verify password
-	parts := strings.Split(req.Password, ".")
-	if len(parts) != 2 {
-		myErr := utils.ErrorHandler(fmt.Errorf("invalid encode hash format"), "Password must be reset")
-		http.Error(w, myErr.Error(), http.StatusInternalServerError)
-	}
 
-	saltBase64 := parts[0]
-
-	salt, err := base64.StdEncoding.DecodeString(saltBase64)
+	err = utils.VerifyPassword(givenPass, req.Password)
 	if err != nil {
-		myErr := utils.ErrorHandler(err, "error decoding salt")
-		http.Error(w, myErr.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	givenPass, err = passEncoder(givenPass, salt)
-
-	if givenPass != req.Password {
-		myErr := utils.ErrorHandler(fmt.Errorf("password doesnt match"), "incorrect password")
-		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

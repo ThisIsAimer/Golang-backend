@@ -123,7 +123,7 @@ func PostExecsDBHandler(modleTags []string, entries []models.Execs) ([]models.Ex
 			return nil, utils.ErrorHandler(err, "error adding data")
 		}
 
-		student.Password, err = passEncoder(student.Password, salt)
+		student.Password, err = utils.PassEncoder(student.Password, salt)
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +193,7 @@ func PatchExecDBHandler(id int, arguments map[string]any) error {
 				return utils.ErrorHandler(err, "error adding data")
 			}
 
-			v, err = passEncoder(v.(string), salt)
+			v, err = utils.PassEncoder(v.(string), salt)
 			if err != nil {
 				return err
 			}
@@ -255,7 +255,7 @@ func PatchExecsDBHandler(argumentsList []map[string]any) error {
 				if err != nil {
 					return utils.ErrorHandler(err, "error adding data")
 				}
-				v, err = passEncoder(v.(string), salt)
+				v, err = utils.PassEncoder(v.(string), salt)
 				if err != nil {
 					return err
 				}
@@ -350,7 +350,6 @@ func DeleteExecsDBHandler(ids []int) error {
 }
 
 // Login-------------------------------------------------------------------------------------------------------
-
 func LoginExecDBHandler(username string) (models.Execs, error) {
 	db_name := os.Getenv("DB_NAME")
 
