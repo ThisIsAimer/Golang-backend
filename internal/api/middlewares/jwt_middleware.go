@@ -27,7 +27,7 @@ func JwtMiddleware(next http.Handler) http.Handler {
 			// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
 			return []byte(jwtSecret), nil
 		}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
-		if err != nil {
+		if err != nil && r.URL.Path != "/execs/login" {
 			if errors.Is(err, jwt.ErrTokenExpired) {
 				myErr := utils.ErrorHandler(err, "token expired")
 				http.Error(w, myErr.Error(), http.StatusUnauthorized)
