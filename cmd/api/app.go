@@ -57,9 +57,11 @@ func main() {
 
 	router := router.Router()
 
+	jwtMiddleware := mid.SkipJwtRoutes(mid.JwtMiddleware, "/execs/login")
+
 	// secureMux := mid.Cors(rateLimiter.Middleware(mid.ResponseTime(mid.SecurityHeaders(mid.CompMiddleware(hppMiddleware(router))))))
 	// secureMux := applyMiddlewares(router,hppMiddleware,mid.CompMiddleware,mid.SecurityHeaders,mid.ResponseTime,rateLimiter.Middleware,mid.Cors)
-	secureMux := utils.ApplyMiddlewares(router, hppMiddleware, rateLimiter.Middleware, mid.JwtMiddleware) // for now faster processing
+	secureMux := utils.ApplyMiddlewares(router, hppMiddleware, rateLimiter.Middleware, jwtMiddleware) // for now faster processing
 
 	server := &http.Server{
 		Addr:      port,

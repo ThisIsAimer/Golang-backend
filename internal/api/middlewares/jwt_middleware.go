@@ -3,7 +3,6 @@ package middlewares
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -29,7 +28,7 @@ func JwtMiddleware(next http.Handler) http.Handler {
 			return []byte(jwtSecret), nil
 		}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 
-		if err != nil && r.URL.Path != "/execs/login" {
+		if err != nil {
 			if errors.Is(err, jwt.ErrTokenExpired) {
 				myErr := utils.ErrorHandler(err, "token expired")
 				http.Error(w, myErr.Error(), http.StatusUnauthorized)
@@ -38,8 +37,6 @@ func JwtMiddleware(next http.Handler) http.Handler {
 			myErr := utils.ErrorHandler(err, "unauthorised access")
 			http.Error(w, myErr.Error(), http.StatusUnauthorized)
 			return
-		} else {
-			err = nil
 		}
 
 		if parsedToken.Valid {
@@ -51,10 +48,9 @@ func JwtMiddleware(next http.Handler) http.Handler {
 
 		claims, ok := parsedToken.Claims.(jwt.MapClaims)
 
-		if ok {
-			fmt.Println(claims["uid"], claims["exp"], claims["role"])
-		} else {
+		if !ok {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
+			log.Println("invalid login token:", token.Value)
 			return
 		}
 
