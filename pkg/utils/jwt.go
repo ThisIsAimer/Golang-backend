@@ -18,13 +18,13 @@ func SignToken(userId int, username, role string) (string, error) {
 	}
 
 	if jwtExpires != "" {
-		diration, err := time.ParseDuration(jwtExpires)
+		duration, err := time.ParseDuration(jwtExpires)
 		if err != nil {
 			return "", ErrorHandler(err, "jwt expire error")
 		}
-		claims["exp"] = time.Now().Add(diration)
+		claims["exp"] = time.Now().Add(duration).Unix()
 	} else {
-		claims["exp"] = time.Now().Add(15 * time.Minute)
+		claims["exp"] = time.Now().Add(15 * time.Minute).Unix()
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

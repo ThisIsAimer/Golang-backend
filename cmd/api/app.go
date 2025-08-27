@@ -10,6 +10,7 @@ import (
 	mid "simpleapi/internal/api/middlewares"
 	"simpleapi/internal/api/router"
 	"simpleapi/pkg/utils"
+
 	"github.com/joho/godotenv"
 )
 
@@ -18,7 +19,7 @@ func main() {
 	err := godotenv.Load(`cmd\api\.env`)
 	if err != nil {
 		utils.ErrorHandler(fmt.Errorf("error getting env files"), "error starting server")
-		return 
+		return
 	}
 
 	port := os.Getenv("API_PORT")
@@ -33,15 +34,15 @@ func main() {
 	rateLimiter := mid.NewRateLimiter(5, time.Second*5)
 
 	whiteList := []string{
-		"sortby", 
+		"sortby",
 
 		// genral
-		"first_name", 
+		"first_name",
 		"last_name",
-		"class", 
+		"class",
 
 		// teachers
-		"email", 
+		"email",
 		"subject",
 	}
 
@@ -58,7 +59,7 @@ func main() {
 
 	// secureMux := mid.Cors(rateLimiter.Middleware(mid.ResponseTime(mid.SecurityHeaders(mid.CompMiddleware(hppMiddleware(router))))))
 	// secureMux := applyMiddlewares(router,hppMiddleware,mid.CompMiddleware,mid.SecurityHeaders,mid.ResponseTime,rateLimiter.Middleware,mid.Cors)
-	secureMux := utils.ApplyMiddlewares(router, hppMiddleware, rateLimiter.Middleware) // for now faster processing
+	secureMux := utils.ApplyMiddlewares(router, hppMiddleware, rateLimiter.Middleware, mid.JwtMiddleware) // for now faster processing
 
 	server := &http.Server{
 		Addr:      port,
