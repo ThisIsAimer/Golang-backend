@@ -70,6 +70,7 @@ func PostExecsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, myErr.Error(), http.StatusBadRequest)
 		return
 	}
+	defer r.Body.Close()
 
 	execTags := getModelTags(models.Execs{})
 
@@ -118,6 +119,7 @@ func PatchExecHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error parsing json body", http.StatusBadRequest)
 		return
 	}
+	defer r.Body.Close()
 
 	err = execsdb.PatchExecDBHandler(id, updates)
 	if err != nil {
@@ -137,6 +139,7 @@ func PatchExecsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error parsing json body", http.StatusBadRequest)
 		return
 	}
+	defer r.Body.Close()
 
 	err = execsdb.PatchExecsDBHandler(updates)
 
@@ -193,6 +196,7 @@ func DeleteExecsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error parsing json body", http.StatusBadRequest)
 		return
 	}
+	defer r.Body.Close()
 
 	for _, id := range ids {
 		switch v := id.(type) {
