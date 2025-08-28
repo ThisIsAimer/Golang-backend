@@ -357,6 +357,16 @@ func LogoutExecHandler(w http.ResponseWriter, r *http.Request) {
 
 // Passwords----------------------------------------------------------------------------------------------
 func ForgetPassExecHandler(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email string `json:"email"`
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+
+	decoder.DisallowUnknownFields()
+
+	decoder.Decode(&req)
 
 }
 

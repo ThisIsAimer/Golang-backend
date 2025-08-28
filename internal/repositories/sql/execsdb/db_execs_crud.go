@@ -429,3 +429,18 @@ func UpdatePassExecDBHandler(id int, currentPassword, newPassword string) error 
 
 	return nil
 }
+
+
+func ForgotPasswordDBHandler(email string) error{
+
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		return utils.ErrorHandler(err, "error connecting to database")
+	}
+	defer db.Close()
+
+
+	return nil
+}
