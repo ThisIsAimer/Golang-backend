@@ -372,3 +372,57 @@ func LoginExecDBHandler(username string) (models.Execs, error) {
 
 	return user, nil
 }
+
+// passwords
+
+func UpdatePassExecDBHandler(id int, currentPassword, newPassword string) error {
+
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		return utils.ErrorHandler(err, "error connecting to database")
+	}
+	defer db.Close()
+
+	var existingUsername string
+	var existingPass string
+
+	err = db.QueryRow("SELECT user_name, password FROM execs WHERE id = ?", id).
+		Scan(&existingUsername, &existingPass)
+
+	if err == sql.ErrNoRows {
+		return utils.ErrorHandler(err, "invalid user id")
+	} else if err != nil {
+		return utils.ErrorHandler(err, "error scanning execs")
+	}
+
+	err = utils.VerifyPassword(currentPassword, existingPass)
+
+	if err != nil {
+		return utils.ErrorHandler(err, "incorrect current password")
+	}
+
+	salt := make([]byte, 16)
+
+	_, err = rand.Read(salt)
+	if err != nil {
+		return utils.ErrorHandler(err, "error adding data")
+	}
+
+	newHashedPassword, err := utils.PassEncoder(newPassword, salt)
+
+	if err != nil {
+		return utils.ErrorHandler(err, "error encoding new password")
+	}
+
+	query := `UPDATE execs SET password = ? WHERE id = ?`
+
+	_, err = db.Exec(query, newHashedPassword, id)
+
+	if err != nil {
+		return utils.ErrorHandler(err, "error updating database")
+	}
+
+	return nil
+}

@@ -46,6 +46,10 @@ func VerifyPassword(givenPass, realPass string) error {
 	}
 
 	givenPass, err = PassEncoder(givenPass, salt)
+	if err != nil {
+		fmt.Println("error is:", err)
+		return ErrorHandler(err, "error encoding password")
+	}
 
 	if givenPass != realPass {
 		return ErrorHandler(fmt.Errorf("password doesnt match"), "incorrect password")

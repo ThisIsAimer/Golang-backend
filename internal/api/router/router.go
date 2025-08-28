@@ -52,7 +52,7 @@ func Router() *http.ServeMux {
 	mux.HandleFunc("POST /execs/login", execs.LoginExecHandler)
 	mux.HandleFunc("POST /execs/logout", execs.LogoutExecHandler)
 	mux.HandleFunc("POST /execs/login/forgotpassword", execs.ForgetPassExecHandler)
-	mux.HandleFunc("POST/execs/{id}/updatepassword", execs.UpdatePassExecHandler)
+	mux.HandleFunc("POST /execs/{id}/updatepassword", execs.UpdatePassExecHandler) // {"current_pass":"", "new_pass":""}
 	mux.HandleFunc("POST /execs/login/resetpassword/reset/{resetcode}", execs.ResetPassExecHandler)
 
 	return mux

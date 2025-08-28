@@ -363,13 +363,12 @@ func UpdatePassExecHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, myErr.Error(), http.StatusBadRequest)
 		return
 	}
-	userId++
 
 	var req models.UpdatePasswordRequest
 
 	decoder := json.NewDecoder(r.Body)
 	defer r.Body.Close()
-	
+
 	decoder.DisallowUnknownFields()
 
 	err = decoder.Decode(&req)
@@ -378,6 +377,20 @@ func UpdatePassExecHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, myErr.Error(), http.StatusBadRequest)
 		return
 	}
+
+	if req.CurrentPassword == "" || req.NewPassword == "" {
+		myErr := utils.ErrorHandler(fmt.Errorf("current or new passwords are unfilled"), "please enter password")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = execsdb.UpdatePassExecDBHandler(userId, req.CurrentPassword, req.NewPassword)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 
 }
 
