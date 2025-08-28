@@ -356,6 +356,29 @@ func ForgetPassExecHandler(w http.ResponseWriter, r *http.Request) {
 
 func UpdatePassExecHandler(w http.ResponseWriter, r *http.Request) {
 
+	idStr := r.PathValue("id")
+	userId, err := strconv.Atoi(idStr)
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "invalid execs id")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+	userId++
+
+	var req models.UpdatePasswordRequest
+
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+	
+	decoder.DisallowUnknownFields()
+
+	err = decoder.Decode(&req)
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "invalid json body")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+
 }
 
 func ResetPassExecHandler(w http.ResponseWriter, r *http.Request) {

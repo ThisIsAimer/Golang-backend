@@ -33,3 +33,14 @@ type BasicExecs struct {
 	Role           string `json:"role,omitempty" db:"role,omitempty"`
 	InactiveStatus bool   `json:"inactive_status,omitempty" db:"inactive_status,omitempty"`
 }
+
+// passwords
+type UpdatePasswordRequest struct {
+	CurrentPassword string `json:"current_pass"`
+	NewPassword     string `json:"new_pass"`
+}
+
+type UpdatePasswordResponse struct {
+	Token           string `json:"current_pass"`
+	PasswordUpdated bool   `json:"pass_updated"`
+}
