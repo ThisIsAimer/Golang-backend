@@ -316,6 +316,8 @@ func LoginExecHandler(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteStrictMode,
 	})
 
+	w.Header().Set("Content-Type", "application/json")
+
 	responce := struct {
 		Token string `json:"token"`
 	}{
@@ -386,11 +388,25 @@ func UpdatePassExecHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = execsdb.UpdatePassExecDBHandler(userId, req.CurrentPassword, req.NewPassword)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent)
+	w.Header().Set("Content-Type", "application/json")
+
+	responce := struct {
+		Message string `json:"message"`
+	}{
+		Message: "password updated successfully",
+	}
+
+	err = json.NewEncoder(w).Encode(responce)
+
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "error encoding json")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
 
 }
 

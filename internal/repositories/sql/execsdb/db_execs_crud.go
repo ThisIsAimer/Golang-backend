@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"time"
 
 	"simpleapi/internal/models"
 	"simpleapi/internal/repositories/sql/sqlconnect"
@@ -416,9 +417,11 @@ func UpdatePassExecDBHandler(id int, currentPassword, newPassword string) error 
 		return utils.ErrorHandler(err, "error encoding new password")
 	}
 
-	query := `UPDATE execs SET password = ? WHERE id = ?`
+	query := `UPDATE execs SET password = ?, password_changed_at = ? WHERE id = ?`
+	
+	currentTime := time.Now().Format(time.RFC3339)
 
-	_, err = db.Exec(query, newHashedPassword, id)
+	_, err = db.Exec(query, newHashedPassword, currentTime, id)
 
 	if err != nil {
 		return utils.ErrorHandler(err, "error updating database")
