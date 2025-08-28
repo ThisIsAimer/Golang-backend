@@ -40,6 +40,11 @@
 - wrk -t8 -c400 -d30s "link"
 - h2load -n  1000 -c 100 -t 8 (--h1 for http1)
 
+## For email testing (mailhog)
+
+- download link: https://github.com/mailhog/MailHog
+- port http://localhost:8025/
+
 
 # middleware snippits
 ```go
