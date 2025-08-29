@@ -2,10 +2,13 @@ package execsdb
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"net/http"
 	"os"
 	"reflect"
+	"strconv"
 	"time"
 
 	"simpleapi/internal/models"
@@ -121,7 +124,7 @@ func PostExecsDBHandler(modleTags []string, entries []models.Execs) ([]models.Ex
 
 		_, err := rand.Read(salt)
 		if err != nil {
-			return nil, utils.ErrorHandler(err, "error adding data")
+			return nil, utils.ErrorHandler(err, "error making salt")
 		}
 
 		student.Password, err = utils.PassEncoder(student.Password, salt)
@@ -191,7 +194,7 @@ func PatchExecDBHandler(id int, arguments map[string]any) error {
 
 			_, err := rand.Read(salt)
 			if err != nil {
-				return utils.ErrorHandler(err, "error adding data")
+				return utils.ErrorHandler(err, "error making salt")
 			}
 
 			v, err = utils.PassEncoder(v.(string), salt)
@@ -254,7 +257,7 @@ func PatchExecsDBHandler(argumentsList []map[string]any) error {
 
 				_, err := rand.Read(salt)
 				if err != nil {
-					return utils.ErrorHandler(err, "error adding data")
+					return utils.ErrorHandler(err, "error making salt")
 				}
 				v, err = utils.PassEncoder(v.(string), salt)
 				if err != nil {
@@ -408,7 +411,7 @@ func UpdatePassExecDBHandler(id int, currentPassword, newPassword string) error 
 
 	_, err = rand.Read(salt)
 	if err != nil {
-		return utils.ErrorHandler(err, "error adding data")
+		return utils.ErrorHandler(err, "error making salt")
 	}
 
 	newHashedPassword, err := utils.PassEncoder(newPassword, salt)
@@ -418,7 +421,7 @@ func UpdatePassExecDBHandler(id int, currentPassword, newPassword string) error 
 	}
 
 	query := `UPDATE execs SET password = ?, password_changed_at = ? WHERE id = ?`
-	
+
 	currentTime := time.Now().Format(time.RFC3339)
 
 	_, err = db.Exec(query, newHashedPassword, currentTime, id)
@@ -431,7 +434,8 @@ func UpdatePassExecDBHandler(id int, currentPassword, newPassword string) error 
 }
 
 
-func ForgotPasswordDBHandler(email string) error{
+// password reset Functions-------------------------------------------------------------------------------------
+func ForgotPasswordDBHandler(email string) error {
 
 	db_name := os.Getenv("DB_NAME")
 
@@ -441,6 +445,37 @@ func ForgotPasswordDBHandler(email string) error{
 	}
 	defer db.Close()
 
+	var exec models.Execs
 
+	err = db.QueryRow("SELECT id FROM execs WHERE email = ?", email).Scan(&exec.ID)
+
+	if err != nil {
+		return utils.ErrorHandler(err, "user not found")
+	}
+
+	expResetTime, err := strconv.Atoi(os.Getenv("RESET_TOKEN_EXP_DURATION"))
+	if err != nil {
+		return utils.ErrorHandler(err, "failed to send password reset mail")
+	}
+
+	mins := time.Duration(expResetTime) * time.Minute
+
+	expiry := time.Now().Add(mins).Format(time.RFC3339)
+
+	tokenBytes := make([]byte, 32)
+	_, err = rand.Read(tokenBytes)
+	if err != nil {
+		return utils.ErrorHandler(err, "error making salt")
+	}
+
+	hashedToken := sha256.Sum256(tokenBytes)
+
+	hashedTokenString := hex.EncodeToString(hashedToken[:])
+
+	_, err = db.Exec("UPDATE execs SET pass_reset_code = ?, pass_code_expires = ? WHERE id = ?", hashedTokenString, expiry, exec.ID)
+
+	if err != nil {
+		return utils.ErrorHandler(err, "error setting token")
+	}
 	return nil
 }
