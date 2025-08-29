@@ -41,6 +41,6 @@ type UpdatePasswordRequest struct {
 }
 
 type UpdatePasswordResponse struct {
-	Token           string `json:"current_pass"`
-	PasswordUpdated bool   `json:"pass_updated"`
+	Token         string `json:"token"`
+	UpdatedStatus bool   `json:"updated_status"`
 }

@@ -366,7 +366,39 @@ func ForgetPassExecHandler(w http.ResponseWriter, r *http.Request) {
 
 	decoder.DisallowUnknownFields()
 
-	decoder.Decode(&req)
+	err := decoder.Decode(&req)
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "invalid json body")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if req.Email == "" {
+		http.Error(w, "please enter an email", http.StatusBadRequest)
+		return
+	}
+
+	err = execsdb.ForgotPasswordDBHandler(req.Email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	responce := struct {
+		Status string `json:"status"`
+	}{
+		Status: fmt.Sprintf("Sent reset link to email : %s", req.Email),
+	}
+
+	err = json.NewEncoder(w).Encode(responce)
+
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "error encoding json")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
 
 }
 

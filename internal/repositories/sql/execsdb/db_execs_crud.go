@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"fmt"
 	"net/http"
 	"os"
 	"reflect"
@@ -14,6 +15,8 @@ import (
 	"simpleapi/internal/models"
 	"simpleapi/internal/repositories/sql/sqlconnect"
 	"simpleapi/pkg/utils"
+
+	"github.com/go-mail/mail/v2"
 )
 
 func GetExecDBHandler(id int) (models.BasicExecs, error) {
@@ -433,7 +436,6 @@ func UpdatePassExecDBHandler(id int, currentPassword, newPassword string) error 
 	return nil
 }
 
-
 // password reset Functions-------------------------------------------------------------------------------------
 func ForgotPasswordDBHandler(email string) error {
 
@@ -468,6 +470,8 @@ func ForgotPasswordDBHandler(email string) error {
 		return utils.ErrorHandler(err, "error making salt")
 	}
 
+	token := hex.EncodeToString(tokenBytes)
+
 	hashedToken := sha256.Sum256(tokenBytes)
 
 	hashedTokenString := hex.EncodeToString(hashedToken[:])
@@ -477,5 +481,22 @@ func ForgotPasswordDBHandler(email string) error {
 	if err != nil {
 		return utils.ErrorHandler(err, "error setting token")
 	}
+
+	resetUrl := fmt.Sprintf("http://localhost:3000/execs/login/resetpassword/reset/%s", token)
+	message := fmt.Sprintf(" forgot your password? reset it using link %s \nIf you didnt reset a password reset, please ignore, the link is only valid for %v mins", resetUrl, expiry)
+
+	myMail := mail.NewMessage()
+
+	myMail.SetHeader("From", "schooladmin@school.com") // replace email
+	myMail.SetHeader("To", email)
+	myMail.SetHeader("Subject", "Password reset link")
+	myMail.SetBody("text/plain", message)
+
+	dialer := mail.NewDialer("localhost", 1025, "", "")
+	err = dialer.DialAndSend(myMail)
+	if err != nil {
+		return utils.ErrorHandler(err,"error sending mail")
+	}
+
 	return nil
 }
