@@ -495,7 +495,59 @@ func ForgotPasswordDBHandler(email string) error {
 	dialer := mail.NewDialer("localhost", 1025, "", "")
 	err = dialer.DialAndSend(myMail)
 	if err != nil {
-		return utils.ErrorHandler(err,"error sending mail")
+		return utils.ErrorHandler(err, "error sending mail")
+	}
+
+	return nil
+}
+
+func ResetPassExecDBHandler(resetCode, new_pass string) error {
+
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		return utils.ErrorHandler(err, "error connecting to database")
+	}
+	defer db.Close()
+
+	var exec models.Execs
+
+	bytes, err := hex.DecodeString(resetCode)
+	if err != nil {
+		return utils.ErrorHandler(err, "error decoding string")
+	}
+
+	hashedToken := sha256.Sum256(bytes)
+
+	hashedTokenString := hex.EncodeToString(hashedToken[:])
+
+	query := `Select id, email FROM execs WHERE pass_reset_code = ? AND pass_code_expires < ?`
+
+	err = db.QueryRow(query, hashedTokenString, time.Now().Format(time.RFC3339)).
+		Scan(&exec.ID, &exec.Email)
+
+	if err != nil {
+		return utils.ErrorHandler(err, "invalid or expired reset code")
+	}
+
+	salt := make([]byte, 16)
+
+	_, err = rand.Read(salt)
+	if err != nil {
+		return utils.ErrorHandler(err, "error making salt")
+	}
+	new_pass, err = utils.PassEncoder(new_pass, salt)
+	if err != nil {
+		return err
+	}
+
+	updateQuery := `UPDATE execs SET password = ?, pass_reset_code = NULL, pass_code_expires = NULL, password_changed_at = ? where id = ?`
+
+	_, err = db.Exec(updateQuery, new_pass, time.Now().Format(time.RFC3339), exec.ID)
+
+	if err != nil {
+		return utils.ErrorHandler(err, "error updating password")
 	}
 
 	return nil

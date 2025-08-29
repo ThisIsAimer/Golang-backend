@@ -441,9 +441,9 @@ func UpdatePassExecHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	responce := struct {
-		Message string `json:"message"`
+		Status string `json:"status"`
 	}{
-		Message: "password updated successfully",
+		Status: "password updated successfully",
 	}
 
 	err = json.NewEncoder(w).Encode(responce)
@@ -457,5 +457,58 @@ func UpdatePassExecHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func ResetPassExecHandler(w http.ResponseWriter, r *http.Request) {
+
+	token := r.PathValue("resetcode")
+
+	var req struct {
+		NewPass     string `json:"new_pass"`
+		ConfirmPass string `json:"conf_pass"`
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+
+	decoder.DisallowUnknownFields()
+
+	err := decoder.Decode(&req)
+
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "invalid json body")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+	if req.NewPass == "" || req.ConfirmPass == "" {
+		myErr := utils.ErrorHandler(fmt.Errorf("new or confirm passwords are empty"), "empty json fields")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if req.NewPass != req.ConfirmPass {
+		myErr := utils.ErrorHandler(fmt.Errorf("new pass doesnt match confirm pass"), "both password fields doesnt match")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = execsdb.ResetPassExecDBHandler(token, req.NewPass)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	responce := struct {
+		Status string `json:"message"`
+	}{
+		Status: "password updated successfully",
+	}
+
+	err = json.NewEncoder(w).Encode(responce)
+
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "error encoding json")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
 
 }
