@@ -44,6 +44,10 @@ func main() {
 		// teachers
 		"email",
 		"subject",
+
+		//pagination
+		"page",
+		"limit",
 	}
 
 	hppSettings := &mid.HppOptions{

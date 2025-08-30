@@ -41,12 +41,12 @@ func GetExecDBHandler(id int) (models.BasicExecs, error) {
 
 }
 
-func GetExecsDBHandler(r *http.Request, params []string) ([]models.BasicExecs, error) {
+func GetExecsDBHandler(r *http.Request, params []string, page, limit int) ([]models.BasicExecs, int, error) {
 	db_name := os.Getenv("DB_NAME")
 
 	db, err := sqlconnect.ConnectDB(db_name)
 	if err != nil {
-		return nil, utils.ErrorHandler(err, "error connecting to database")
+		return nil, 0, utils.ErrorHandler(err, "error connecting to database")
 	}
 	defer db.Close()
 
@@ -54,11 +54,17 @@ func GetExecsDBHandler(r *http.Request, params []string) ([]models.BasicExecs, e
 
 	query, args := addFilters(r, query, params)
 
+	// pagination
+	offset := (page - 1) * limit
+	query += "LIMIT ? OFFSET ? "
+
+	args = append(args, limit, offset)
+
 	query = addSorting(r, query, params)
 
 	rows, err := db.Query(query, args...)
 	if err != nil {
-		return nil, utils.ErrorHandler(err, "error making query")
+		return nil, 0, utils.ErrorHandler(err, "error making query")
 	}
 	defer rows.Close()
 
@@ -68,12 +74,24 @@ func GetExecsDBHandler(r *http.Request, params []string) ([]models.BasicExecs, e
 		var exec models.BasicExecs
 		err = rows.Scan(&exec.ID, &exec.FirstName, &exec.LastName, &exec.Email, &exec.UserName, &exec.UserCreatedAt, &exec.Role, &exec.InactiveStatus)
 		if err != nil {
-			return nil, utils.ErrorHandler(err, "error scanning database results")
+			return nil, 0, utils.ErrorHandler(err, "error scanning database results")
 		}
 		execs = append(execs, exec)
 	}
 
-	return execs, nil
+	// total count
+	var totalCount int
+
+	countQuery := `SELECT COUNT(*) FROM execs WHERE 1=1 `
+
+	countQuery, newArgs := addFilters(r, countQuery, params)
+
+	err = db.QueryRow(countQuery, newArgs...).Scan(&totalCount)
+	if err != nil {
+		return nil, 0, utils.ErrorHandler(err, "error getting total count")
+	}
+
+	return execs, totalCount, nil
 }
 
 // post-----------------------------------------------------------------------------------------------------------------------

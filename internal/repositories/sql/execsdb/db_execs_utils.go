@@ -40,7 +40,7 @@ func addSorting(r *http.Request, query string, validFields []string) string {
 				query += " , "
 			}
 
-			query += field + " " + order
+			query += field + " " + order + " "
 
 		}
 	}

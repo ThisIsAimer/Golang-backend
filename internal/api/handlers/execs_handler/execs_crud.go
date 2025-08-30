@@ -38,20 +38,39 @@ func GetExecHandler(w http.ResponseWriter, r *http.Request) {
 func GetExecsHandler(w http.ResponseWriter, r *http.Request) {
 	validTags := getModelTags(models.Student{})
 
-	execsList, err := execsdb.GetExecsDBHandler(r, validTags)
+	page, limit := getPaginationParams(r)
+
+	execsList, count, err := execsdb.GetExecsDBHandler(r, validTags, page, limit)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	startEntry := ((page - 1) * limit) + 1
+	endEntry := ((page - 1) * limit) + limit
+
+	if endEntry > count {
+		endEntry = count
+	}
+	if startEntry > count {
+		startEntry = 0
+		endEntry = 0
+	}
+
+	strCount := fmt.Sprintf("%d-%d of %d", startEntry, endEntry, count)
+
 	response := struct {
-		Status string              `json:"status"`
-		Count  int                 `json:"count"`
-		Data   []models.BasicExecs `json:"data"`
+		Status   string              `json:"status"`
+		Count    string              `json:"count"`
+		PageNo   int                 `json:"page_no"`
+		PageSize int                 `json:"page_size"`
+		Data     []models.BasicExecs `json:"data"`
 	}{
-		Status: "success",
-		Count:  len(execsList),
-		Data:   execsList,
+		Status:   "success",
+		Count:    strCount,
+		PageNo:   page,
+		PageSize: limit,
+		Data:     execsList,
 	}
 	w.Header().Set("Content-Type", "application/json")
 
