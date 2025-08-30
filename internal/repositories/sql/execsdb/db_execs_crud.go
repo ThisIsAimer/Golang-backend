@@ -254,6 +254,10 @@ func PatchExecsDBHandler(argumentsList []map[string]any) error {
 			}
 			flags += k + " = ?"
 
+			if k == "user_name" {
+				return utils.ErrorHandler(fmt.Errorf("trying to patch username"), ("cant edit user's username"))
+			}
+
 			if k == "password" {
 				// hashing pass
 				salt := make([]byte, 16)
