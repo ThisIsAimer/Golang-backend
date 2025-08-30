@@ -33,12 +33,12 @@ func GetStudentDBHandler(id int) (models.Student, error) {
 
 }
 
-func GetStudentsDBHandler(r *http.Request, params []string) ([]models.Student, error) {
+func GetStudentsDBHandler(r *http.Request, params []string, page, limit int) ([]models.Student, int, error) {
 	db_name := os.Getenv("DB_NAME")
 
 	db, err := sqlconnect.ConnectDB(db_name)
 	if err != nil {
-		return nil, utils.ErrorHandler(err, "error connecting to database")
+		return nil, 0, utils.ErrorHandler(err, "error connecting to database")
 	}
 	defer db.Close()
 
@@ -46,11 +46,17 @@ func GetStudentsDBHandler(r *http.Request, params []string) ([]models.Student, e
 
 	query, args := addFilters(r, query, params)
 
+	// pagination
+	offset := (page - 1) * limit
+	query += "LIMIT ? OFFSET ? "
+
+	args = append(args, limit, offset)
+
 	query = addSorting(r, query, params)
 
 	rows, err := db.Query(query, args...)
 	if err != nil {
-		return nil, utils.ErrorHandler(err, "error making query")
+		return nil, 0, utils.ErrorHandler(err, "error making query")
 	}
 	defer rows.Close()
 
@@ -60,12 +66,24 @@ func GetStudentsDBHandler(r *http.Request, params []string) ([]models.Student, e
 		var student models.Student
 		err = rows.Scan(&student.ID, &student.FirstName, &student.LastName, &student.Email, &student.Class)
 		if err != nil {
-			return nil, utils.ErrorHandler(err, "error scanning database results")
+			return nil, 0, utils.ErrorHandler(err, "error scanning database results")
 		}
 		students = append(students, student)
 	}
 
-	return students, nil
+	// total count
+	var totalCount int
+
+	countQuery := `SELECT COUNT(*) FROM students WHERE 1=1 `
+
+	countQuery, newArgs := addFilters(r, countQuery, params)
+
+	err = db.QueryRow(countQuery, newArgs...).Scan(&totalCount)
+	if err != nil {
+		return nil, 0, utils.ErrorHandler(err, "error getting total count")
+	}
+
+	return students, totalCount, nil
 }
 
 // post ----------------------------------------------------------------------------------------------------------------------

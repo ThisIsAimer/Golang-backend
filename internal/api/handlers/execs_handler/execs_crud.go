@@ -46,9 +46,11 @@ func GetExecsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	startEntry := ((page - 1) * limit) + 1
-	endEntry := ((page - 1) * limit) + limit
+	startEntry := ((page - 1) * limit)
+	endEntry := startEntry + limit
 
+	startEntry++
+	
 	if endEntry > count {
 		endEntry = count
 	}
@@ -56,6 +58,7 @@ func GetExecsHandler(w http.ResponseWriter, r *http.Request) {
 		startEntry = 0
 		endEntry = 0
 	}
+
 
 	strCount := fmt.Sprintf("%d-%d of %d", startEntry, endEntry, count)
 

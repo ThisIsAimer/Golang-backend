@@ -38,20 +38,41 @@ func GetStudentHandler(w http.ResponseWriter, r *http.Request) {
 func GetStudentsHandler(w http.ResponseWriter, r *http.Request) {
 	validTags := getModelTags(models.Student{})
 
-	studentList, err := studentdb.GetStudentsDBHandler(r, validTags)
+	page, limit := getPaginationParams(r)
+
+	studentList, count, err := studentdb.GetStudentsDBHandler(r, validTags, page, limit)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	startEntry := ((page - 1) * limit)
+	endEntry := startEntry + limit
+
+	startEntry++
+
+	if endEntry > count {
+		endEntry = count
+	}
+	if startEntry > count {
+		startEntry = 0
+		endEntry = 0
+	}
+
+	strCount := fmt.Sprintf("%d-%d of %d", startEntry, endEntry, count)
+
 	response := struct {
-		Status string           `json:"status"`
-		Count  int              `json:"count"`
-		Data   []models.Student `json:"data"`
+		Status   string           `json:"status"`
+		Count    string           `json:"count"`
+		PageNo   int              `json:"page_no"`
+		PageSize int              `json:"page_size"`
+		Data     []models.Student `json:"data"`
 	}{
-		Status: "success",
-		Count:  len(studentList),
-		Data:   studentList,
+		Status:   "success",
+		Count:    strCount,
+		PageNo:   page,
+		PageSize: limit,
+		Data:     studentList,
 	}
 	w.Header().Set("Content-Type", "application/json")
 
@@ -71,7 +92,7 @@ func PostStudentsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, student:= range students{
+	for _, student := range students {
 		err := fieldIsEmpty(student)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)

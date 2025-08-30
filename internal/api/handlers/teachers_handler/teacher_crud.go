@@ -2,6 +2,7 @@ package teachers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -15,20 +16,41 @@ func GetTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	teacherList, err := teacherdb.GetTeachersDBHandler(w, r)
+	page, limit := getPaginationParams(r)
+
+	teacherList, count, err := teacherdb.GetTeachersDBHandler(w, r, page, limit)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	startEntry := ((page - 1) * limit)
+	endEntry := startEntry + limit
+
+	startEntry++
+
+	if endEntry > count {
+		endEntry = count
+	}
+	if startEntry > count {
+		startEntry = 0
+		endEntry = 0
+	}
+
+	strCount := fmt.Sprintf("%d-%d of %d", startEntry, endEntry, count)
+
 	response := struct {
-		Status string           `json:"status"`
-		Count  int              `json:"count"`
-		Data   []models.Teacher `json:"data"`
+		Status   string           `json:"status"`
+		Count    string           `json:"count"`
+		PageNo   int              `json:"page_no"`
+		PageSize int              `json:"page_size"`
+		Data     []models.Teacher `json:"data"`
 	}{
-		Status: "success",
-		Count:  len(teacherList),
-		Data:   teacherList,
+		Status:   "success",
+		Count:    strCount,
+		PageNo:   page,
+		PageSize: limit,
+		Data:     teacherList,
 	}
 
 	err = json.NewEncoder(w).Encode(response)

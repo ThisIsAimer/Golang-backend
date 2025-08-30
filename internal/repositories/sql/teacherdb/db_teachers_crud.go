@@ -37,12 +37,12 @@ func GetTeacherDBHandler(w http.ResponseWriter, id int) (models.Teacher, error) 
 
 }
 
-func GetTeachersDBHandler(w http.ResponseWriter, r *http.Request) ([]models.Teacher, error) {
+func GetTeachersDBHandler(w http.ResponseWriter, r *http.Request, page, limit int) ([]models.Teacher, int, error) {
 	db_name := os.Getenv("DB_NAME")
 
 	db, err := sqlconnect.ConnectDB(db_name)
 	if err != nil {
-		return nil, utils.ErrorHandler(err, "error connecting to server")
+		return nil, 0, utils.ErrorHandler(err, "error connecting to server")
 	}
 	defer db.Close()
 	query := "SELECT id, first_name, last_name, email, class, subject FROM teachers WHERE 1=1 "
@@ -57,11 +57,17 @@ func GetTeachersDBHandler(w http.ResponseWriter, r *http.Request) ([]models.Teac
 
 	query, args := addFilters(r, query, queryParams)
 
+	// pagination
+	offset := (page - 1) * limit
+	query += "LIMIT ? OFFSET ? "
+
+	args = append(args, limit, offset)
+
 	query = addSorting(r, query)
 
 	rows, err := db.Query(query, args...)
 	if err != nil {
-		return nil, utils.ErrorHandler(err, "error getting rows")
+		return nil, 0, utils.ErrorHandler(err, "error getting rows")
 	}
 	defer rows.Close()
 
@@ -71,11 +77,24 @@ func GetTeachersDBHandler(w http.ResponseWriter, r *http.Request) ([]models.Teac
 		var teacher models.Teacher
 		err = rows.Scan(&teacher.ID, &teacher.FirstName, &teacher.LastName, &teacher.Email, &teacher.Class, &teacher.Subject)
 		if err != nil {
-			return nil, utils.ErrorHandler(err, "error scanning database results")
+			return nil, 0, utils.ErrorHandler(err, "error scanning database results")
 		}
 		teacherList = append(teacherList, teacher)
 	}
-	return teacherList, nil
+
+	// total count
+	var totalCount int
+
+	countQuery := `SELECT COUNT(*) FROM teachers WHERE 1=1 `
+
+	countQuery, newArgs := addFilters(r, countQuery, queryParams)
+
+	err = db.QueryRow(countQuery, newArgs...).Scan(&totalCount)
+	if err != nil {
+		return nil, 0, utils.ErrorHandler(err, "error getting total count")
+	}
+
+	return teacherList, totalCount, nil
 }
 
 // post------------------------------------------------------------------------------------------------------------------------------------
@@ -420,8 +439,6 @@ func GetStudentCountByTeacherIdDB(id string) (int, error) {
 	if err != nil {
 		return 0, utils.ErrorHandler(err, "error getting rows")
 	}
-	
 
 	return studentCount, nil
 }
-

@@ -2,8 +2,10 @@ package teachers
 
 import (
 	"errors"
+	"net/http"
 	"reflect"
-	
+	"strconv"
+
 	"simpleapi/pkg/utils"
 )
 
@@ -17,4 +19,18 @@ func fieldIsEmpty(model any) error {
 	}
 
 	return nil
+}
+
+func getPaginationParams(r *http.Request) (int, int) {
+
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil {
+		limit = 20
+	}
+
+	return page, limit
 }
