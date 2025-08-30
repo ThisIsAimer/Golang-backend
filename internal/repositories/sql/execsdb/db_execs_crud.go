@@ -482,7 +482,7 @@ func ForgotPasswordDBHandler(email string) error {
 		return utils.ErrorHandler(err, "error setting token")
 	}
 
-	resetUrl := fmt.Sprintf("http://localhost:3000/execs/login/resetpassword/reset/%s", token)
+	resetUrl := fmt.Sprintf("https://localhost:3000/execs/login/resetpassword/reset/%s", token)
 	message := fmt.Sprintf(" forgot your password? reset it using link %s \nIf you didnt reset a password reset, please ignore, the link is only valid for %v mins", resetUrl, expiry)
 
 	myMail := mail.NewMessage()
@@ -522,7 +522,7 @@ func ResetPassExecDBHandler(resetCode, new_pass string) error {
 
 	hashedTokenString := hex.EncodeToString(hashedToken[:])
 
-	query := `Select id, email FROM execs WHERE pass_reset_code = ? AND pass_code_expires < ?`
+	query := `Select id, email FROM execs WHERE pass_reset_code = ? AND pass_code_expires > ?`
 
 	err = db.QueryRow(query, hashedTokenString, time.Now().Format(time.RFC3339)).
 		Scan(&exec.ID, &exec.Email)
