@@ -1,10 +1,14 @@
 package middlewares
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"simpleapi/pkg/utils"
+	"strings"
 
 	"github.com/microcosm-cc/bluemonday"
 )
@@ -46,11 +50,65 @@ func XSSMiddleware(next http.Handler) http.Handler {
 		}
 
 		r.URL.Path = sanitizedPath.(string)
+		fmt.Println("original Query:", r.URL.RawQuery)
 
 		r.URL.RawQuery = url.Values(sanitizedQuery).Encode()
 
 		fmt.Println("updated url:", r.URL.Path)
 		fmt.Println("updated Query:", r.URL.RawQuery)
+
+		//sanitize body-------------------------------------------------------------------------------
+
+		if r.Header.Get("Content-Type") == "application/json" {
+
+			if r.Body != nil {
+				bodyBytes, err := io.ReadAll(r.Body)
+				if err != nil {
+					http.Error(w, utils.ErrorHandler(err, "error reading request body").Error(), http.StatusUnsupportedMediaType)
+					return
+				}
+
+				bodyString := strings.TrimSpace(string(bodyBytes))
+
+				r.Body = io.NopCloser(bytes.NewReader([]byte(bodyString)))
+
+				if len(bodyString) > 0 {
+
+					// this will unmartial any kind of json data
+					var inputData any
+					err := json.NewDecoder(bytes.NewReader([]byte(bodyString))).Decode(&inputData)
+					if err != nil {
+						http.Error(w, utils.ErrorHandler(err, "invalid json body in xss").Error(), http.StatusUnsupportedMediaType)
+						return
+					}
+					fmt.Println("original input data:", inputData)
+
+					sanitizedData, err := clean(inputData)
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					}
+					fmt.Println("sanitised input data:", sanitizedData)
+
+					// martial to json body
+
+					sanitizedBody, err := json.Marshal(sanitizedData)
+					if err != nil {
+						http.Error(w, "error martialing sanitized data", http.StatusInternalServerError)
+						return
+					}
+
+					r.Body = io.NopCloser(bytes.NewReader(sanitizedBody))
+					fmt.Println("sanitised body:", string(sanitizedBody))
+
+				}
+			}
+
+		} else if r.Header.Get("Content-Type") != "" {
+			myErr := utils.ErrorHandler(fmt.Errorf("non application/json body"), "unsupported json body")
+			http.Error(w, myErr.Error(), http.StatusUnsupportedMediaType)
+			return
+		}
 
 		next.ServeHTTP(w, r)
 	})
