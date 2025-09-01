@@ -50,12 +50,8 @@ func XSSMiddleware(next http.Handler) http.Handler {
 		}
 
 		r.URL.Path = sanitizedPath.(string)
-		fmt.Println("original Query:", r.URL.RawQuery)
 
 		r.URL.RawQuery = url.Values(sanitizedQuery).Encode()
-
-		fmt.Println("updated url:", r.URL.Path)
-		fmt.Println("updated Query:", r.URL.RawQuery)
 
 		//sanitize body-------------------------------------------------------------------------------
 
@@ -81,14 +77,12 @@ func XSSMiddleware(next http.Handler) http.Handler {
 						http.Error(w, utils.ErrorHandler(err, "invalid json body in xss").Error(), http.StatusUnsupportedMediaType)
 						return
 					}
-					fmt.Println("original input data:", inputData)
 
 					sanitizedData, err := clean(inputData)
 					if err != nil {
 						http.Error(w, err.Error(), http.StatusInternalServerError)
 						return
 					}
-					fmt.Println("sanitised input data:", sanitizedData)
 
 					// martial to json body
 
@@ -99,7 +93,6 @@ func XSSMiddleware(next http.Handler) http.Handler {
 					}
 
 					r.Body = io.NopCloser(bytes.NewReader(sanitizedBody))
-					fmt.Println("sanitised body:", string(sanitizedBody))
 
 				}
 			}
@@ -158,13 +151,12 @@ func sanitizeValue(value any) any {
 		}
 		return d
 
-	case string:
-		return sanitizeString(d)
+	case float64, int, bool, nil:
+		return d
 
 	default:
+		return d
 	}
-
-	return 0
 }
 
 func sanitizeString(value string) string {
