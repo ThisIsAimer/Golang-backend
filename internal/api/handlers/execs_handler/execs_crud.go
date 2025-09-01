@@ -50,7 +50,7 @@ func GetExecsHandler(w http.ResponseWriter, r *http.Request) {
 	endEntry := startEntry + limit
 
 	startEntry++
-	
+
 	if endEntry > count {
 		endEntry = count
 	}
@@ -58,7 +58,6 @@ func GetExecsHandler(w http.ResponseWriter, r *http.Request) {
 		startEntry = 0
 		endEntry = 0
 	}
-
 
 	strCount := fmt.Sprintf("%d-%d of %d", startEntry, endEntry, count)
 
@@ -82,11 +81,18 @@ func GetExecsHandler(w http.ResponseWriter, r *http.Request) {
 
 // Post------------------------------------------------------------------------------------------------
 func PostExecsHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin", "moderator")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	var execs []models.Execs
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
-	err := decoder.Decode(&execs)
+	err = decoder.Decode(&execs)
 	if err != nil {
 		myErr := utils.ErrorHandler(err, "invalid json body")
 		http.Error(w, myErr.Error(), http.StatusBadRequest)
@@ -125,6 +131,13 @@ func PostExecsHandler(w http.ResponseWriter, r *http.Request) {
 
 // Patch----------------------------------------------------------------------------------------------
 func PatchExecHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin", "moderator")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	idstr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idstr)
@@ -154,9 +167,16 @@ func PatchExecHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PatchExecsHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin", "moderator")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	var updates []map[string]any
 
-	err := json.NewDecoder(r.Body).Decode(&updates)
+	err = json.NewDecoder(r.Body).Decode(&updates)
 	if err != nil {
 		http.Error(w, "error parsing json body", http.StatusBadRequest)
 		return
@@ -176,6 +196,13 @@ func PatchExecsHandler(w http.ResponseWriter, r *http.Request) {
 
 // Delete----------------------------------------------------------------------------------------------
 func DeleteExecHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	idstr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idstr)
@@ -210,10 +237,17 @@ func DeleteExecHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteExecsHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	var ids []any
 	var intIds []int
 
-	err := json.NewDecoder(r.Body).Decode(&ids)
+	err = json.NewDecoder(r.Body).Decode(&ids)
 	if err != nil {
 		http.Error(w, "error parsing json body", http.StatusBadRequest)
 		return

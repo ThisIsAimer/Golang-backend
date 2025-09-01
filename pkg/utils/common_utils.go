@@ -17,6 +17,16 @@ func ErrorHandler(err error, message string) error {
 	return fmt.Errorf("%v", message)
 }
 
+func AuthorizeUser(userRole string, allowedRoles ...string) error {
+
+	for _, allowedRole := range allowedRoles {
+		if userRole == allowedRole {
+			return nil
+		}
+	}
+	return ErrorHandler(fmt.Errorf("Role of user: %s", userRole), "user is unauthorised")
+}
+
 func PassEncoder(password string, salt []byte) (string, error) {
 	if password == "" {
 		return "", ErrorHandler(fmt.Errorf("password is empty"), "password is required")

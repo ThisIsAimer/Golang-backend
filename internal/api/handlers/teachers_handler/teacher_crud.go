@@ -90,14 +90,20 @@ func GetTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 // CRUD POST------------------------------------------------------------------------------------------------
 func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin", "moderator")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
 
 	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
 	// used to discard unknown fields
 	decoder.DisallowUnknownFields()
 
 	var newTeachers []models.Teacher
-	err := decoder.Decode(&newTeachers)
+	err = decoder.Decode(&newTeachers)
 	if err != nil {
 		myError := utils.ErrorHandler(err, "invalid request body")
 		http.Error(w, myError.Error(), http.StatusBadRequest)
@@ -141,6 +147,13 @@ func PostTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 // CRUD PUT--------------------------------------------------------------------------------------
 func PutTeacherHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin", "moderator")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	idstr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idstr)
@@ -183,6 +196,12 @@ func PutTeacherHandler(w http.ResponseWriter, r *http.Request) {
 // CRUD PATCH-------------------------------------------------------------------------------------------------------
 func PatchTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin", "moderator")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	idstr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idstr)
@@ -212,9 +231,15 @@ func PatchTeacherHandler(w http.ResponseWriter, r *http.Request) {
 // used for multi update
 func PatchTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin", "moderator")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	var updates []map[string]any
 
-	err := json.NewDecoder(r.Body).Decode(&updates)
+	err = json.NewDecoder(r.Body).Decode(&updates)
 	if err != nil {
 		http.Error(w, "invalid request payload json not in format", http.StatusBadRequest)
 		return
@@ -232,6 +257,12 @@ func PatchTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 // CRUD DELETE--------------------------------------------------------------------------------------------------
 func DeleteTeacherHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
 
 	idstr := r.PathValue("id")
 
@@ -262,8 +293,14 @@ func DeleteTeacherHandler(w http.ResponseWriter, r *http.Request) {
 
 func DeleteTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	var ids []string
-	err := json.NewDecoder(r.Body).Decode(&ids)
+	err = json.NewDecoder(r.Body).Decode(&ids)
 	if err != nil {
 		myErr := utils.ErrorHandler(err, "error decoding ids")
 		http.Error(w, myErr.Error(), http.StatusInternalServerError)

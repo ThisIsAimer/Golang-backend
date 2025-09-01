@@ -81,11 +81,18 @@ func GetStudentsHandler(w http.ResponseWriter, r *http.Request) {
 
 // post ----------------------------------------------------------------------------------------
 func PostStudentsHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin", "moderator")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	var students []models.Student
 	decoder := json.NewDecoder(r.Body)
 	decoder.DisallowUnknownFields()
 
-	err := decoder.Decode(&students)
+	err = decoder.Decode(&students)
 	if err != nil {
 		myErr := utils.ErrorHandler(err, "invalid json body")
 		http.Error(w, myErr.Error(), http.StatusBadRequest)
@@ -130,6 +137,13 @@ func PostStudentsHandler(w http.ResponseWriter, r *http.Request) {
 
 // put -----------------------------------------------------------------------------------
 func PutStudentHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin", "moderator")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		myErr := utils.ErrorHandler(err, "invalid id")
@@ -178,6 +192,12 @@ func PutStudentHandler(w http.ResponseWriter, r *http.Request) {
 // patch ------------------------------------------------------------------------------
 func PatchStudentHandler(w http.ResponseWriter, r *http.Request) {
 
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin", "moderator")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	idstr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idstr)
@@ -206,9 +226,16 @@ func PatchStudentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func PatchStudentsHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin", "moderator")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	var updates []map[string]any
 
-	err := json.NewDecoder(r.Body).Decode(&updates)
+	err = json.NewDecoder(r.Body).Decode(&updates)
 	if err != nil {
 		http.Error(w, "error parsing json body", http.StatusBadRequest)
 		return
@@ -225,6 +252,13 @@ func PatchStudentsHandler(w http.ResponseWriter, r *http.Request) {
 
 // delete -----------------------------------------------------------------------------
 func DeleteStudentHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	idstr := r.PathValue("id")
 
 	id, err := strconv.Atoi(idstr)
@@ -259,10 +293,17 @@ func DeleteStudentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteStudentsHandler(w http.ResponseWriter, r *http.Request) {
+
+	err := utils.AuthorizeUser(r.Context().Value("role").(string), "admin")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	var ids []any
 	var intIds []int
 
-	err := json.NewDecoder(r.Body).Decode(&ids)
+	err = json.NewDecoder(r.Body).Decode(&ids)
 	if err != nil {
 		http.Error(w, "error parsing json body", http.StatusBadRequest)
 		return
