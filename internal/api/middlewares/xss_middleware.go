@@ -23,7 +23,6 @@ func XSSMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "invalid path", http.StatusInternalServerError)
 			return
 		}
-		fmt.Println(sanitizedPath)
 
 		// sanitize quary params-------------------------------------------------------------
 		params := r.URL.Query()
@@ -66,7 +65,6 @@ func XSSMiddleware(next http.Handler) http.Handler {
 
 				bodyString := strings.TrimSpace(string(bodyBytes))
 
-				r.Body = io.NopCloser(bytes.NewReader([]byte(bodyString)))
 
 				if len(bodyString) > 0 {
 

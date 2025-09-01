@@ -39,9 +39,7 @@ func JwtMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		if parsedToken.Valid {
-			log.Println("valid Jwt")
-		} else {
+		if !parsedToken.Valid {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
 			log.Println("invalid jwt:", token.Value)
 		}

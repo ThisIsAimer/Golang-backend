@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"compress/gzip"
-	"fmt"
 	"net/http"
 	"strings"
 )
@@ -17,8 +16,6 @@ func CompMiddleware(next http.Handler) http.Handler{
 			w.Header().Set("Content-Encoding","gzip")
 			w.Header().Del("Content-Length") // content length might cause some problems
 
-			
-			fmt.Println("compression active")
 
 
 			gz := gzip.NewWriter(w)
