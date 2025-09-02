@@ -8,7 +8,12 @@
 - go clean -modcache
 - go mod verify
 
+## use of wsl
+
 ### to use wsl (wsl -d ubuntu)
+### benchmarking
+- wrk -t8 -c400 -d30s "link"
+- h2load -n  1000 -c 100 -t 8 (--h1 for http1)
 
 ### imports used!
 - go driver for my sql (github.com/go-sql-driver/mysql)
@@ -34,11 +39,6 @@
 - curl (curl -v -k https://localhost:3000/)
 
 
-## benchmarking
-### use of wsl
-
-- wrk -t8 -c400 -d30s "link"
-- h2load -n  1000 -c 100 -t 8 (--h1 for http1)
 
 ## For email testing (mailhog)
 
@@ -80,3 +80,21 @@
 - user_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 - user_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ```
+
+## binary building in go
+- go build -o (name_of_exe_file.exe) (main_file_name/path)
+### cmd to run:
+- go build -o api_exe_windows_arm64.exe cmd\api\app.go
+### some more flags
+- GOOS=windows "the operating system we use"
+- GOARCH=arm64 "the cpu architecture we use"
+
+#### to execute .\binary_executable\api_exe_windows_arm64.exe (windows)
+
+## code obfuscation
+- go install mvdan.cc/garble@latest
+- garble build -o api_exe_windows_arm64.exe cmd\api\app.go
+
+--- 
+### API PROJECT DONE!
+---
