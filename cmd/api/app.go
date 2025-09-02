@@ -61,7 +61,7 @@ func main() {
 
 	router := router.Router()
 
-	jwtMiddleware := mid.SkipJwtRoutes(mid.JwtMiddleware, "/execs/login", "/execs/login/forgotpassword", "/resetpassword/reset")
+	jwtMiddleware := mid.SkipJwtRoutes(mid.JwtMiddleware, "/execs/login", "/execs/login/forgotusername", "/execs/login/forgotpassword", "/resetpassword/reset")
 
 	// secureMux := mid.Cors(rateLimiter.Middleware(mid.ResponseTime(mid.SecurityHeaders(mid.CompMiddleware(hppMiddleware(router))))))
 	// secureMux := applyMiddlewares(router,hppMiddleware,mid.CompMiddleware,mid.SecurityHeaders,mid.ResponseTime,rateLimiter.Middleware,mid.Cors)

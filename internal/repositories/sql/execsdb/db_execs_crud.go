@@ -403,7 +403,6 @@ func LoginExecDBHandler(username string) (models.Execs, error) {
 }
 
 // passwords
-
 func UpdatePassExecDBHandler(id int, currentPassword, newPassword string) error {
 
 	db_name := os.Getenv("DB_NAME")
@@ -456,6 +455,43 @@ func UpdatePassExecDBHandler(id int, currentPassword, newPassword string) error 
 	}
 
 	return nil
+}
+
+func ForgotUsernameDBHandler(email string) error {
+	db_name := os.Getenv("DB_NAME")
+
+	db, err := sqlconnect.ConnectDB(db_name)
+	if err != nil {
+		return utils.ErrorHandler(err, "error connecting to database")
+	}
+	defer db.Close()
+
+	var username string
+
+	err = db.QueryRow("SELECT user_name FROM execs WHERE email = ?", email).Scan(&username)
+
+	if err != nil {
+		return utils.ErrorHandler(err, "user not found")
+	}
+
+	message := fmt.Sprintf("forgot your Username?, Your username in database is \"%s\" \nIf you didnt forget your Username, please ignore this", username)
+
+	myMail := mail.NewMessage()
+
+	myMail.SetHeader("From", "schooladmin@school.com") // replace email
+	myMail.SetHeader("To", email)
+	myMail.SetHeader("Subject", "Forgot username")
+
+	myMail.SetBody("text/plain", message)
+
+	dialer := mail.NewDialer("localhost", 1025, "", "")
+	err = dialer.DialAndSend(myMail)
+	if err != nil {
+		return utils.ErrorHandler(err, "error sending mail")
+	}
+
+	return nil
+
 }
 
 // password reset Functions-------------------------------------------------------------------------------------

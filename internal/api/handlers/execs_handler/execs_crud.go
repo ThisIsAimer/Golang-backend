@@ -411,10 +411,7 @@ func LogoutExecHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Message: logged out successfully"))
 }
 
-// usernames------------------------------------------------------------------------------------------------
-func ForgetUserNameExecHandler(w http.ResponseWriter, r *http.Request) {
 
-}
 
 // Passwords----------------------------------------------------------------------------------------------
 func UpdatePassExecHandler(w http.ResponseWriter, r *http.Request) {
@@ -471,7 +468,57 @@ func UpdatePassExecHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func ForgetPassExecHandler(w http.ResponseWriter, r *http.Request) {
+// usernames------------------------------------------------------------------------------------------------
+func ForgotUsernameExecHandler(w http.ResponseWriter, r *http.Request) {
+
+	var req struct {
+		Email string `json:"email"`
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+
+	decoder.DisallowUnknownFields()
+
+	err := decoder.Decode(&req)
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "invalid json body")
+		http.Error(w, myErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if req.Email == "" {
+		http.Error(w, "please enter an email", http.StatusBadRequest)
+		return
+	}
+
+	err = execsdb.ForgotUsernameDBHandler(req.Email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	responce := struct {
+		Status string `json:"status"`
+	}{
+		Status: fmt.Sprintf("Sent username to email : %s", req.Email),
+	}
+
+	err = json.NewEncoder(w).Encode(responce)
+
+	if err != nil {
+		myErr := utils.ErrorHandler(err, "error encoding json")
+		http.Error(w, myErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}
+
+
+// forget password----------------------------------------------------------------------------------------------------------
+func ForgotPassExecHandler(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Email string `json:"email"`
 	}
